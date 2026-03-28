@@ -319,16 +319,16 @@ export default function BookingsPage() {
                             </div>
                           </div>
                           
-                          <div className="flex flex-wrap gap-6 pt-2">
+                          <div className="outline-box p-4 bg-slate-50/50 flex flex-wrap gap-6 mt-4 border-none shadow-none">
                              <div className="flex items-center gap-2.5 text-slate-600">
-                                <div className="p-2 bg-slate-100 rounded-xl">
-                                  <Calendar size={18} className="text-slate-500" />
+                                <div className="p-2 bg-white rounded-xl shadow-sm">
+                                  <Calendar size={18} className="text-secondary-foreground/60" />
                                 </div>
                                 <span className="font-bold text-sm tracking-tight">{format(new Date(booking.startTime), 'EEEE, MMM d, yyyy')}</span>
                              </div>
                              <div className="flex items-center gap-2.5 text-slate-600">
-                                <div className="p-2 bg-slate-100 rounded-xl">
-                                  <Clock size={18} className="text-slate-500" />
+                                <div className="p-2 bg-white rounded-xl shadow-sm">
+                                  <Clock size={18} className="text-secondary-foreground/60" />
                                 </div>
                                 <span className="font-bold text-sm tracking-tight">{format(new Date(booking.startTime), 'h:mm a')}</span>
                              </div>

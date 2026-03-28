@@ -129,14 +129,19 @@
   }
 }
 
+@utility outline-box {
+  @apply rounded-3xl border border-slate-200/50 p-6 bg-slate-50/40 transition-all duration-300 hover:border-slate-300/80 hover:bg-slate-50/60 shadow-sm;
+}
+
+@utility soft-shadow {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+}
+
 @layer utilities {
   .glass {
     @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-xl;
   }
   
-  .soft-shadow {
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
-  }
 
   .premium-card {
     @apply bg-white border border-slate-200/60 rounded-3xl soft-shadow transition-all duration-300 hover:shadow-2xl hover:border-primary/20;

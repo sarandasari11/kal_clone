@@ -275,27 +275,29 @@ export default function AvailabilityPage() {
         </div>
 
         <div className="space-y-8">
-          <div className="premium-card p-8">
+          <div className="premium-card p-8 group">
              <div className="mb-6">
                 <h2 className="text-2xl font-bold text-slate-900">Timezone</h2>
                 <p className="text-slate-500 font-medium mt-1">Ensure your availability matches your local time.</p>
              </div>
-             <select
-                className="w-full h-12 rounded-2xl border border-slate-200 bg-white px-4 font-bold text-slate-700 shadow-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all appearance-none cursor-pointer"
-                value={timeZone}
-                onChange={(e) => updateTimeZone(e.target.value)}
-              >
-                <option value="UTC">UTC (Global)</option>
-                <option value="America/New_York">Eastern Time (ET)</option>
-                <option value="America/Chicago">Central Time (CT)</option>
-                <option value="America/Denver">Mountain Time (MT)</option>
-                <option value="America/Los_Angeles">Pacific Time (PT)</option>
-                <option value="Europe/London">London (GMT)</option>
-                <option value="Europe/Paris">Central Europe (CET)</option>
-                <option value="Asia/Tokyo">Japan (JST)</option>
-                <option value="Asia/Kolkata">India (IST)</option>
-                <option value="Australia/Sydney">Sydney (AEST)</option>
-             </select>
+             <div className="outline-box p-4 bg-slate-50/50">
+               <select
+                  className="w-full h-12 rounded-2xl border border-slate-200 bg-white px-4 font-bold text-slate-700 shadow-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all appearance-none cursor-pointer"
+                  value={timeZone}
+                  onChange={(e) => updateTimeZone(e.target.value)}
+                >
+                  <option value="UTC">UTC (Global)</option>
+                  <option value="America/New_York">Eastern Time (ET)</option>
+                  <option value="America/Chicago">Central Time (CT)</option>
+                  <option value="America/Denver">Mountain Time (MT)</option>
+                  <option value="America/Los_Angeles">Pacific Time (PT)</option>
+                  <option value="Europe/London">London (GMT)</option>
+                  <option value="Europe/Paris">Central Europe (CET)</option>
+                  <option value="Asia/Tokyo">Japan (JST)</option>
+                  <option value="Asia/Kolkata">India (IST)</option>
+                  <option value="Australia/Sydney">Sydney (AEST)</option>
+               </select>
+             </div>
           </div>
 
           <div className="premium-card p-8">
@@ -304,61 +306,63 @@ export default function AvailabilityPage() {
               <p className="text-slate-500 font-medium mt-1">Block specific dates or custom hours.</p>
             </div>
             
-            <form onSubmit={handleCreateOverride} className="space-y-4">
-              <div className="space-y-2">
-                <Label className="font-bold text-slate-700">Date</Label>
-                <Input
-                  type="date"
-                  className="h-12 rounded-xl"
-                  value={overrideForm.date}
-                  onChange={(e) => setOverrideForm((prev) => ({ ...prev, date: e.target.value }))}
-                  required
-                />
-              </div>
-              <div className="flex items-center justify-between gap-2 p-3 bg-slate-50 border border-slate-100 rounded-xl">
-                 <span className="text-sm font-bold text-slate-700">Block full day</span>
-                 <Switch
-                    checked={overrideForm.isBlocked}
-                    onCheckedChange={(val) => setOverrideForm((prev) => ({ ...prev, isBlocked: val }))}
-                    className="data-[state=checked]:bg-red-500"
-                  />
-              </div>
-              
-              {!overrideForm.isBlocked && (
-                <motion.div 
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="grid grid-cols-2 gap-3"
-                >
+            <div className="outline-box p-6 mb-8">
+              <form onSubmit={handleCreateOverride} className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="font-bold text-slate-700">Date</Label>
                   <Input
-                    type="time"
+                    type="date"
                     className="h-12 rounded-xl"
-                    value={overrideForm.startTime}
-                    onChange={(e) => setOverrideForm((prev) => ({ ...prev, startTime: e.target.value }))}
+                    value={overrideForm.date}
+                    onChange={(e) => setOverrideForm((prev) => ({ ...prev, date: e.target.value }))}
+                    required
                   />
-                  <Input
-                    type="time"
-                    className="h-12 rounded-xl"
-                    value={overrideForm.endTime}
-                    onChange={(e) => setOverrideForm((prev) => ({ ...prev, endTime: e.target.value }))}
-                  />
-                </motion.div>
-              )}
-              
-              <Button type="submit" disabled={savingOverride} className="w-full h-12 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition-all">
-                {savingOverride ? <Loader2 className="animate-spin" size={18} /> : 'Add Override'}
-              </Button>
-            </form>
+                </div>
+                <div className="flex items-center justify-between gap-2 p-3 bg-slate-50 border border-slate-100 rounded-xl">
+                   <span className="text-sm font-bold text-slate-700">Block full day</span>
+                   <Switch
+                      checked={overrideForm.isBlocked}
+                      onCheckedChange={(val) => setOverrideForm((prev) => ({ ...prev, isBlocked: val }))}
+                      className="data-[state=checked]:bg-red-500"
+                    />
+                </div>
+                
+                {!overrideForm.isBlocked && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="grid grid-cols-2 gap-3"
+                  >
+                    <Input
+                      type="time"
+                      className="h-12 rounded-xl"
+                      value={overrideForm.startTime}
+                      onChange={(e) => setOverrideForm((prev) => ({ ...prev, startTime: e.target.value }))}
+                    />
+                    <Input
+                      type="time"
+                      className="h-12 rounded-xl"
+                      value={overrideForm.endTime}
+                      onChange={(e) => setOverrideForm((prev) => ({ ...prev, endTime: e.target.value }))}
+                    />
+                  </motion.div>
+                )}
+                
+                <Button type="submit" disabled={savingOverride} className="w-full h-12 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition-all">
+                  {savingOverride ? <Loader2 className="animate-spin" size={18} /> : 'Add Override'}
+                </Button>
+              </form>
+            </div>
 
             <AnimatePresence>
-              <div className="mt-8 space-y-3">
+              <div className="space-y-3">
                 {dateOverrides.map((override) => (
                   <motion.div
                     key={override.id}
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    className="flex flex-col gap-3 rounded-2xl border border-slate-100 p-4 bg-slate-50/50"
+                    className="outline-box p-5 flex flex-col gap-3"
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-slate-900 text-sm">

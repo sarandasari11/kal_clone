@@ -79,7 +79,7 @@ export function DashboardShell({
 
           {/* User Profile */}
           <div className="p-4 mt-auto">
-             <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+             <div className="outline-box p-4 bg-slate-50/50 border-slate-200/40 shadow-none">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center shadow-md">
                     <User size={18} className="text-white" />

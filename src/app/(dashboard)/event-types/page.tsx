@@ -199,11 +199,11 @@ export default function EventTypesPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="slug" className="font-bold text-slate-700">URL Slug</Label>
-                  <div className="flex items-center gap-2 text-sm text-slate-500 border rounded-xl px-4 bg-slate-50 border-slate-200">
-                    <span className="font-medium">kalclone.com/</span>
+                  <div className="outline-box p-3 bg-slate-50/50 flex items-center gap-2 text-sm text-slate-400 border-none shadow-none">
+                    <span className="font-bold">kalclone.com/</span>
                     <input 
                       id="slug"
-                      className="flex-1 bg-transparent py-3 focus:outline-none text-slate-900 font-bold"
+                      className="flex-1 bg-transparent py-1 focus:outline-none text-slate-900 font-extrabold placeholder:text-slate-300"
                       placeholder="quick-chat"
                       value={formData.slug}
                       onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
@@ -211,7 +211,7 @@ export default function EventTypesPage() {
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="outline-box p-5 grid grid-cols-2 gap-4 bg-slate-50/30">
                   <div className="space-y-2">
                     <Label htmlFor="duration" className="font-bold text-slate-700">Duration (min)</Label>
                     <Input 
@@ -219,7 +219,7 @@ export default function EventTypesPage() {
                       type="number" 
                       value={formData.duration}
                       onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                      className="h-12 rounded-xl"
+                      className="h-12 rounded-xl bg-white border-slate-200"
                       required
                     />
                   </div>
@@ -231,7 +231,7 @@ export default function EventTypesPage() {
                       min="0"
                       value={formData.bufferAfterMinutes}
                       onChange={(e) => setFormData({ ...formData, bufferAfterMinutes: e.target.value })}
-                      className="h-12 rounded-xl"
+                      className="h-12 rounded-xl bg-white border-slate-200"
                       required
                     />
                   </div>
@@ -275,15 +275,18 @@ export default function EventTypesPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="edit-slug" className="font-bold text-slate-700">URL Slug</Label>
-                  <Input
-                    id="edit-slug"
-                    value={editFormData.slug}
-                    onChange={(e) => setEditFormData({ ...editFormData, slug: e.target.value })}
-                    className="h-12 rounded-xl"
-                    required
-                  />
+                  <div className="outline-box p-3 bg-slate-50/50 flex items-center gap-2 text-sm text-slate-400 border-none shadow-none">
+                    <span className="font-bold">kalclone.com/</span>
+                    <input
+                      id="edit-slug"
+                      className="flex-1 bg-transparent py-1 focus:outline-none text-slate-900 font-extrabold"
+                      value={editFormData.slug}
+                      onChange={(e) => setEditFormData({ ...editFormData, slug: e.target.value })}
+                      required
+                    />
+                  </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="outline-box p-5 grid grid-cols-2 gap-4 bg-slate-50/30">
                   <div className="space-y-2">
                     <Label htmlFor="edit-duration" className="font-bold text-slate-700">Duration (min)</Label>
                     <Input
@@ -291,7 +294,7 @@ export default function EventTypesPage() {
                       type="number"
                       value={editFormData.duration}
                       onChange={(e) => setEditFormData({ ...editFormData, duration: e.target.value })}
-                      className="h-12 rounded-xl"
+                      className="h-12 rounded-xl bg-white border-slate-200"
                       required
                     />
                   </div>
@@ -303,7 +306,7 @@ export default function EventTypesPage() {
                       min="0"
                       value={editFormData.bufferAfterMinutes}
                       onChange={(e) => setEditFormData({ ...editFormData, bufferAfterMinutes: e.target.value })}
-                      className="h-12 rounded-xl"
+                      className="h-12 rounded-xl bg-white border-slate-200"
                       required
                     />
                   </div>
