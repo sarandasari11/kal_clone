@@ -16,6 +16,11 @@ export async function GET() {
 
     const eventTypes = await prisma.eventType.findMany({
       where: { userId },
+      include: {
+        user: {
+          select: { username: true },
+        },
+      },
       orderBy: { createdAt: 'desc' },
     })
 

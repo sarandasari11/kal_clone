@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Plus, ExternalLink, MoreVertical, Copy, Edit, Trash, Clock } from 'lucide-react'
+import { Plus, ExternalLink, Copy, Edit, Trash, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { 
@@ -23,13 +23,24 @@ interface EventType {
   description: string | null
   duration: number
   slug: string
+  user: {
+    username: string
+  }
 }
 
 export default function EventTypesPage() {
   const [eventTypes, setEventTypes] = useState<EventType[]>([])
   const [loading, setLoading] = useState(true)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [editingEventTypeId, setEditingEventTypeId] = useState<string | null>(null)
   const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    duration: '30',
+    slug: ''
+  })
+  const [editFormData, setEditFormData] = useState({
     title: '',
     description: '',
     duration: '30',
@@ -74,10 +85,50 @@ export default function EventTypesPage() {
     }
   }
 
-  const copyLink = (slug: string) => {
-    const url = `${window.location.origin}/admin/${slug}` // Mock username as 'admin'
+  const getPublicUrl = (username: string, slug: string) => {
+    return `${window.location.origin}/${username}/${slug}`
+  }
+
+  const copyLink = (username: string, slug: string) => {
+    const url = getPublicUrl(username, slug)
     navigator.clipboard.writeText(url)
     toast.success('Link copied to clipboard')
+  }
+
+  const openEditDialog = (eventType: EventType) => {
+    setEditingEventTypeId(eventType.id)
+    setEditFormData({
+      title: eventType.title,
+      description: eventType.description || '',
+      duration: String(eventType.duration),
+      slug: eventType.slug,
+    })
+    setIsEditDialogOpen(true)
+  }
+
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingEventTypeId) return
+
+    try {
+      const res = await fetch(`/api/event-types/${editingEventTypeId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editFormData)
+      })
+
+      if (res.ok) {
+        toast.success('Event type updated')
+        setIsEditDialogOpen(false)
+        setEditingEventTypeId(null)
+        fetchEventTypes()
+      } else {
+        const err = await res.json()
+        toast.error(err.error || 'Failed to update event type')
+      }
+    } catch (err) {
+      toast.error('Something went wrong')
+    }
   }
 
   const handleDelete = async (id: string) => {
@@ -87,6 +138,9 @@ export default function EventTypesPage() {
       if (res.ok) {
         toast.success('Event type deleted')
         fetchEventTypes()
+      } else {
+        const err = await res.json()
+        toast.error(err.error || 'Failed to delete event type')
       }
     } catch (err) {
       toast.error('Failed to delete')
@@ -95,10 +149,10 @@ export default function EventTypesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Event Types</h1>
-          <p className="text-sm text-gray-500">Manage your event types and availability.</p>
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">Event Types</h1>
+          <p className="text-sm text-gray-600 mt-2">Manage your event types and availability.</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger render={
@@ -127,7 +181,7 @@ export default function EventTypesPage() {
                 <div className="space-y-2">
                   <Label htmlFor="slug">URL Slug</Label>
                   <div className="flex items-center gap-2 text-sm text-gray-500 border rounded-md px-3 bg-gray-50">
-                    <span>calclone.com/admin/</span>
+                    <span>calclone.com/your-username/</span>
                     <input 
                       id="slug"
                       className="flex-1 bg-transparent py-2 focus:outline-none text-black"
@@ -165,26 +219,82 @@ export default function EventTypesPage() {
             </form>
           </DialogContent>
         </Dialog>
+
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent>
+            <form onSubmit={handleEdit}>
+              <DialogHeader>
+                <DialogTitle>Edit event type</DialogTitle>
+                <DialogDescription>Update your event type details.</DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-title">Title</Label>
+                  <Input
+                    id="edit-title"
+                    value={editFormData.title}
+                    onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-slug">URL Slug</Label>
+                  <Input
+                    id="edit-slug"
+                    value={editFormData.slug}
+                    onChange={(e) => setEditFormData({ ...editFormData, slug: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-duration">Duration (minutes)</Label>
+                  <Input
+                    id="edit-duration"
+                    type="number"
+                    value={editFormData.duration}
+                    onChange={(e) => setEditFormData({ ...editFormData, duration: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-description">Description (optional)</Label>
+                  <Input
+                    id="edit-description"
+                    value={editFormData.description}
+                    onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
+                <Button type="submit">Save Changes</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-48 rounded-xl bg-gray-100 animate-pulse border-2 border-dashed" />
+            <div key={i} className="h-48 rounded-xl bg-gray-200 animate-pulse border border-gray-300" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {eventTypes.map((et) => (
-            <Card key={et.id} className="group relative overflow-hidden transition-all hover:shadow-sm">
+            <Card key={et.id} className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-blue-200">
               <CardHeader className="pb-4">
-                <div className="flex items-center justify-between">
-                  <div className="h-4 w-4 rounded-full bg-green-500" />
-                  <div className="flex gap-2">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500 hover:text-gray-900" onClick={() => copyLink(et.slug)} title="Copy booking link">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div className="h-3 w-3 rounded-full bg-green-500 shadow-sm" />
+                  <div className="flex gap-2 flex-wrap">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500 hover:text-gray-900" onClick={() => copyLink(et.user.username, et.slug)} title="Copy booking link">
                       <Copy size={16} />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500 hover:bg-blue-50 hover:text-blue-700" onClick={() => window.open(`/admin/${et.slug}`, '_blank')} title="View live page">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-600 hover:text-gray-900" onClick={() => openEditDialog(et)} title="Edit event type">
+                      <Edit size={16} />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500 hover:bg-blue-50 hover:text-blue-700" onClick={() => window.open(getPublicUrl(et.user.username, et.slug), '_blank')} title="View live page">
                       <ExternalLink size={16} />
                     </Button>
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-700" onClick={() => handleDelete(et.id)}>
@@ -192,18 +302,18 @@ export default function EventTypesPage() {
                     </Button>
                   </div>
                 </div>
-                <CardTitle className="text-lg font-bold">{et.title}</CardTitle>
-                <CardDescription className="flex items-center gap-1">
-                  /admin/{et.slug}
+                <CardTitle className="text-lg sm:text-xl font-bold text-gray-900 mt-3">{et.title}</CardTitle>
+                <CardDescription className="flex items-center gap-1 text-xs sm:text-sm text-gray-600 break-all">
+                  /{et.user.username}/{et.slug}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <Clock size={14} />
-                  <span>{et.duration}m</span>
+                <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 font-medium">
+                  <Clock size={16} className="text-gray-400" />
+                  <span>{et.duration} min</span>
                 </div>
               </CardContent>
-              <div className="absolute inset-x-0 bottom-0 h-1 bg-black opacity-0 transition-opacity group-hover:opacity-100" />
+              <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-blue-500 to-blue-600 opacity-0 transition-opacity group-hover:opacity-100" />
             </Card>
           ))}
         </div>

@@ -85,12 +85,12 @@ export default function AvailabilityPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Availability</h1>
-          <p className="text-sm text-gray-500">Configure your default working hours and schedule.</p>
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">Availability</h1>
+          <p className="text-sm text-gray-600 mt-2">Configure your default working hours and schedule.</p>
         </div>
-        <Button onClick={saveAvailability} disabled={saving} className="gap-2">
+        <Button onClick={saveAvailability} disabled={saving} className="gap-2 w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white">
           {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
           Save Changes
         </Button>
@@ -101,45 +101,46 @@ export default function AvailabilityPage() {
           <CardTitle>Weekly Hours</CardTitle>
           <CardDescription>Select the days and times you are available for bookings.</CardDescription>
         </CardHeader>
-        <CardContent className="divide-y">
+        <CardContent className="divide-y divide-gray-200">
           {availability.map((day) => (
             <div key={day.dayOfWeek} className="flex flex-col sm:flex-row sm:items-center justify-between py-6 first:pt-0 last:pb-0 gap-4">
-              <div className="flex items-center gap-4 w-32">
+              <div className="flex items-center gap-4 min-w-max">
                 <Switch 
                   checked={day.isAvailable}
                   onCheckedChange={(val) => handleUpdate(day.dayOfWeek, { isAvailable: val })}
                 />
-                <span className="font-medium text-sm w-20">{dayNames[day.dayOfWeek]}</span>
+                <span className="font-semibold text-sm w-24 text-gray-900">{dayNames[day.dayOfWeek]}</span>
               </div>
 
               {day.isAvailable ? (
-                <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-2 duration-300">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 animate-in fade-in slide-in-from-left-2 duration-300 w-full sm:w-auto">
                   <Input 
                     type="time" 
-                    className="w-32" 
+                    className="w-full sm:w-32 text-sm" 
                     value={day.startTime}
                     onChange={(e) => handleUpdate(day.dayOfWeek, { startTime: e.target.value })}
                   />
-                  <span className="text-gray-400 text-sm">-</span>
+                  <span className="text-gray-400 text-sm hidden sm:inline">to</span>
+                  <span className="text-gray-400 text-sm sm:hidden">to</span>
                   <Input 
                     type="time" 
-                    className="w-32" 
+                    className="w-full sm:w-32 text-sm" 
                     value={day.endTime}
                     onChange={(e) => handleUpdate(day.dayOfWeek, { endTime: e.target.value })}
                   />
                 </div>
               ) : (
-                <div className="flex-1 text-sm text-gray-400">Unavailable</div>
+                <div className="text-sm text-gray-500 font-medium italic">Not available</div>
               )}
             </div>
           ))}
         </CardContent>
       </Card>
       
-      <div className="flex justify-end pt-4">
-         <Button variant="outline" className="gap-2 text-gray-500" disabled>
-            <Clock size={16} />
-            Timezone: UTC (Global Default)
+      <div className="flex justify-start sm:justify-end pt-4">
+         <Button variant="outline" className="gap-2 text-gray-600 cursor-default hover:bg-white w-full sm:w-auto" disabled>
+            <Clock size={16} className="text-gray-400" />
+            <span className="text-sm">Timezone: UTC</span>
          </Button>
       </div>
     </div>

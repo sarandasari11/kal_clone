@@ -1,0 +1,64 @@
+# Cal.com Clone Project Tasks
+
+## Phase 1: Project setup & MySQL database design (~1.5 hrs)
+- [x] Create Next.js project with TypeScript + Tailwind CSS + shadcn/ui
+- [x] Provision MySQL 8 database — use PlanetScale (free) or Railway MySQL instance
+- [x] Install Prisma, set provider to "mysql" in schema.prisma, add DATABASE_URL to .env
+- [x] Design full schema: users, event_types, availability, bookings — with proper MySQL data types
+- [x] Use INT AUTO_INCREMENT or CHAR(36) for IDs — avoid UUID() issues in MySQL foreign keys
+- [x] Run prisma migrate dev to apply schema, then run seed script
+- [x] Seed: 1 default user, 3 event types, 5 sample bookings with varied statuses
+> [!NOTE]  
+> MySQL-specific: Use ENUM('active','cancelled') for booking status. Use TIME columns for availability slots. Use TINYINT(1) for boolean flags (e.g. is_available). Prisma handles these natively with the mysql provider.
+
+## Phase 2: Backend API routes (~2.5 hrs)
+- [x] GET /api/event-types — list all event types
+- [x] POST /api/event-types — create new event type
+- [x] PUT /api/event-types/:id — edit event type
+- [x] DELETE /api/event-types/:id — delete event type
+- [x] GET/PUT /api/availability — fetch and update availability schedule
+- [x] GET /api/slots/:slug/:date — compute free time slots for a date
+- [x] POST /api/bookings — create booking with double-booking check using MySQL transaction
+- [x] GET /api/bookings — list all bookings split by upcoming/past
+- [x] PATCH /api/bookings/:id/cancel — set status = 'cancelled' in MySQL
+- [x] GET /api/booking/:id/confirm — return booking details for confirmation page
+> [!NOTE]  
+> Double-booking prevention in MySQL: wrap the check + insert in a Prisma transaction with SELECT ... FOR UPDATE to lock the row. This prevents race conditions — important with MySQL's InnoDB engine.
+
+## Phase 3: Admin dashboard (event types + availability) (~2.5 hrs)
+- [x] Build Cal.com-style sidebar layout with nav: Event Types, Availability, Bookings
+- [x] Event Types page — list as cards with copy-link, edit, delete actions
+- [x] Create / Edit Event Type modal — title, description, duration, URL slug fields
+- [x] Availability page — day toggles (Mon-Sun), time range pickers, timezone selector
+- [x] Bookings dashboard — tabs for Upcoming / Past, cancel button per booking
+- [x] Match Cal.com visual design: white sidebar, minimal cards, clean typography
+> [!TIP]  
+> Study cal.com's actual dashboard before building. Key UI: event type cards with a link icon, per-day availability toggles, clean bookings table.
+
+## Phase 4: Public booking page (~3 hrs)
+- [x] Route: `/[username]/[slug]` — fully public, no login required
+- [x] Left panel: event info (title, duration, timezone)
+- [x] Calendar grid — disable days with no availability set in MySQL availability table
+- [x] Time slot list — fetched from /api/slots, excludes already-booked slots from MySQL
+- [x] Booking form: booker name, email — submits to POST /api/bookings
+- [x] Confirmation page /booking/confirmed?id=... — query booking by ID from MySQL
+> [!TIP]  
+> Most visible part — evaluators will use this directly. Match Cal.com's 3-column booking layout exactly. Use react-day-picker for the calendar.
+
+## Phase 5: Bonus features (if time permits) (optional)
+- [ ] Responsive design — mobile and tablet layouts with Tailwind breakpoints
+- [ ] Email notifications via Resend or Nodemailer on booking confirmation/cancellation
+- [ ] Rescheduling flow — update booking's date/time, check slot availability in MySQL
+- [ ] Buffer time — add buffer_after_minutes column to event_types table
+- [ ] Date overrides table — MySQL table for blocked dates or custom hour ranges
+> [!IMPORTANT]  
+> Only attempt after all 4 core modules are working end-to-end. A polished core is far better than broken bonus features.
+
+## Phase 6: Deployment + README + submission (~1 hr)
+- [ ] Deploy frontend to Vercel — add DATABASE_URL (MySQL connection string) as env var
+- [ ] MySQL DB on PlanetScale or Railway — run prisma migrate deploy + seed on production
+- [ ] Write README: setup steps, MySQL config, env vars list, assumptions made
+- [ ] Make GitHub repo public, test full booking flow on live URL end-to-end
+- [ ] Submit GitHub link + deployed app link
+> [!NOTE]  
+> In your README, explicitly mention MySQL 8 as the database. Include the Prisma schema snippet and note any MySQL-specific decisions (ENUM types, TIME columns, InnoDB transactions) — this shows DB awareness to evaluators.

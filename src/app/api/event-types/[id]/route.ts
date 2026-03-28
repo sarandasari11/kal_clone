@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { Prisma } from '@prisma/client'
 
 export async function PUT(
   request: Request,
@@ -33,11 +34,33 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params
+
+    const bookingsCount = await prisma.booking.count({
+      where: { eventTypeId: id },
+    })
+
+    if (bookingsCount > 0) {
+      return NextResponse.json(
+        { error: 'Cannot delete event type with existing bookings' },
+        { status: 409 }
+      )
+    }
+
     await prisma.eventType.delete({
       where: { id },
     })
     return new NextResponse(null, { status: 204 })
   } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2003'
+    ) {
+      return NextResponse.json(
+        { error: 'Cannot delete event type with existing bookings' },
+        { status: 409 }
+      )
+    }
+
     console.error('DELETE /api/event-types/[id] error:', error)
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
