@@ -25,7 +25,7 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
           user.password
         )
         
-        if (passwordsMatch) return { id: user.id, name: user.name, email: user.email }
+        if (passwordsMatch) return { id: user.id, name: user.name, email: user.email, username: user.username }
         
         return null
       }
@@ -38,12 +38,14 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
     jwt({ token, user }) {
       if (user) {
         token.id = user.id
+        token.username = (user as any).username
       }
       return token
     },
     session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string
+        (session.user as any).username = token.username as string
       }
       return session
     }
