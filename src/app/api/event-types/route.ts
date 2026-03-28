@@ -1,20 +1,11 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { revalidateTag, unstable_cache } from 'next/cache'
+import { auth } from '@/lib/auth'
 
-// Mock session user ID - in a real app, this would come from auth
-async function getMockSessionUserId() {
-  const user = await prisma.user.findFirst()
-  return user?.id
-}
-
-export async function GET() {
-  try {
-    const userId = await getMockSessionUserId()
-    if (!userId) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
-
-    const eventTypes = await prisma.eventType.findMany({
+const getEventTypesCached = unstable_cache(
+  async (userId: string) => {
+    return prisma.eventType.findMany({
       where: { userId },
       include: {
         user: {
@@ -23,6 +14,20 @@ export async function GET() {
       },
       orderBy: { createdAt: 'desc' },
     })
+  },
+  ['api-event-types-by-user'],
+  { revalidate: 60, tags: ['event-types'] }
+)
+
+export async function GET() {
+  try {
+    const session = await auth()
+    const userId = session?.user?.id
+    if (!userId) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    const eventTypes = await getEventTypesCached(userId)
 
     return NextResponse.json(eventTypes)
   } catch (error) {
@@ -33,22 +38,28 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const userId = await getMockSessionUserId()
+    const session = await auth()
+    const userId = session?.user?.id
     if (!userId) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
     const body = await request.json()
-    const { title, description, duration, slug } = body
+    const { title, description, duration, slug, bufferAfterMinutes } = body
 
     if (!title || !duration || !slug) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
+    const normalizedSlug = String(slug).trim().toLowerCase()
+    if (!/^[a-z0-9-]+$/.test(normalizedSlug)) {
+      return NextResponse.json({ error: 'Slug must contain only lowercase letters, numbers, and hyphens' }, { status: 400 })
+    }
+
     // Check if slug is already taken for this user
     const existing = await prisma.eventType.findUnique({
       where: {
-        userId_slug: { userId, slug },
+        userId_slug: { userId, slug: normalizedSlug },
       },
     })
 
@@ -61,10 +72,14 @@ export async function POST(request: Request) {
         title,
         description,
         duration: parseInt(duration),
-        slug,
+        bufferAfterMinutes: Number.isFinite(Number(bufferAfterMinutes)) ? Number(bufferAfterMinutes) : 0,
+        slug: normalizedSlug,
         userId,
       },
     })
+
+    revalidateTag('event-types', 'max')
+    revalidateTag('slots', 'max')
 
     return NextResponse.json(newEventType, { status: 201 })
   } catch (error) {

@@ -13,8 +13,18 @@ import {
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import { format, isAfter } from 'date-fns'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface Booking {
   id: string
@@ -32,6 +42,9 @@ export default function BookingsPage() {
   const [upcoming, setUpcoming] = useState<Booking[]>([])
   const [past, setPast] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
+  const [cancelBookingId, setCancelBookingId] = useState<string | null>(null)
+  const [rescheduleBooking, setRescheduleBooking] = useState<Booking | null>(null)
+  const [rescheduleDateTime, setRescheduleDateTime] = useState('')
 
   useEffect(() => {
     fetchBookings()
@@ -53,13 +66,13 @@ export default function BookingsPage() {
   }
 
   const handleCancel = async (id: string) => {
-    if (!confirm('Are you sure you want to cancel this booking?')) return
     try {
       const res = await fetch(`/api/bookings/${id}/cancel`, { 
         method: 'PATCH' 
       })
       if (res.ok) {
         toast.success('Booking cancelled')
+        setCancelBookingId(null)
         fetchBookings()
       } else {
         toast.error('Failed to cancel')
@@ -67,6 +80,43 @@ export default function BookingsPage() {
     } catch (err) {
       toast.error('Something went wrong')
     }
+  }
+
+  const handleReschedule = async (booking: Booking) => {
+    const parsed = new Date(rescheduleDateTime)
+    if (Number.isNaN(parsed.getTime())) {
+      toast.error('Invalid date/time format')
+      return
+    }
+
+    try {
+      const res = await fetch(`/api/bookings/${booking.id}/reschedule`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ startTime: parsed.toISOString() }),
+      })
+
+      if (res.ok) {
+        toast.success('Booking rescheduled')
+        setRescheduleBooking(null)
+        setRescheduleDateTime('')
+        fetchBookings()
+      } else {
+        const err = await res.json()
+        toast.error(err.error || 'Failed to reschedule booking')
+      }
+    } catch (err) {
+      toast.error('Something went wrong')
+    }
+  }
+
+  const openCancelDialog = (id: string) => {
+    setCancelBookingId(id)
+  }
+
+  const openRescheduleDialog = (booking: Booking) => {
+    setRescheduleBooking(booking)
+    setRescheduleDateTime(format(new Date(booking.startTime), "yyyy-MM-dd'T'HH:mm"))
   }
 
   if (loading) return (
@@ -132,14 +182,24 @@ export default function BookingsPage() {
                 </TableCell>
                 <TableCell className="text-right">
                   {isUpcoming && booking.status === 'active' && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => handleCancel(booking.id)}
-                    >
-                      Cancel
-                    </Button>
+                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                        onClick={() => openRescheduleDialog(booking)}
+                      >
+                        Reschedule
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => openCancelDialog(booking.id)}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
                   )}
                 </TableCell>
               </TableRow>
@@ -183,53 +243,230 @@ export default function BookingsPage() {
           </div>
         </div>
         {isUpcoming && booking.status === 'active' && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
-            onClick={() => handleCancel(booking.id)}
-          >
-            Cancel Booking
-          </Button>
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+              onClick={() => openRescheduleDialog(booking)}
+            >
+              Reschedule
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+              onClick={() => openCancelDialog(booking.id)}
+            >
+              Cancel
+            </Button>
+          </div>
         )}
       </div>
     </div>
   )
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">Bookings</h1>
-        <p className="text-sm text-gray-600 mt-2">Track all your scheduled appointments.</p>
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-10"
+    >
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+        <div>
+          <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">Bookings</h1>
+          <p className="text-slate-500 mt-2 font-medium text-lg italic">Track and manage your scheduled appointments.</p>
+        </div>
       </div>
 
-      <Card className="border-none shadow-none bg-transparent">
+      <div className="w-full">
         <Tabs defaultValue="upcoming" className="w-full">
-          <TabsList className="bg-gray-200/70 p-1 mb-6 w-full">
-            <TabsTrigger value="upcoming" className="flex-1 rounded-md text-sm sm:text-base">Upcoming</TabsTrigger>
-            <TabsTrigger value="past" className="flex-1 rounded-md text-sm sm:text-base">Past / Cancelled</TabsTrigger>
+          <TabsList className="bg-slate-100/80 p-1.5 mb-10 w-fit rounded-2xl border border-slate-200/50">
+            <TabsTrigger value="upcoming" className="rounded-xl px-8 py-2.5 font-bold data-[state=active]:bg-white data-[state=active]:shadow-md transition-all">Upcoming</TabsTrigger>
+            <TabsTrigger value="past" className="rounded-xl px-8 py-2.5 font-bold data-[state=active]:bg-white data-[state=active]:shadow-md transition-all">Past / Cancelled</TabsTrigger>
           </TabsList>
           
-          <Card className="overflow-hidden border border-gray-200 shadow-sm">
-            <TabsContent value="upcoming" className="m-0">
-              <BookingTable bookings={upcoming} isUpcoming={true} />
-              <div className="sm:hidden space-y-3 p-4">
-                {upcoming.map((booking) => (
-                  <BookingCard key={booking.id} booking={booking} isUpcoming={true} />
-                ))}
-              </div>
-            </TabsContent>
-            <TabsContent value="past" className="m-0">
-              <BookingTable bookings={past} isUpcoming={false} />
-              <div className="sm:hidden space-y-3 p-4">
-                {past.map((booking) => (
-                  <BookingCard key={booking.id} booking={booking} isUpcoming={false} />
-                ))}
-              </div>
-            </TabsContent>
-          </Card>
+          <TabsContent value="upcoming" className="m-0 space-y-6">
+             {upcoming.length === 0 ? (
+               <div className="premium-card p-20 text-center">
+                  <Calendar className="mx-auto h-12 w-12 text-slate-300 mb-4" />
+                  <p className="text-slate-500 font-bold text-lg">No upcoming bookings found.</p>
+               </div>
+             ) : (
+               <motion.div layout className="grid gap-6">
+                 <AnimatePresence mode="popLayout">
+                   {upcoming.map((booking, index) => (
+                     <motion.div
+                       key={booking.id}
+                       layout
+                       initial={{ opacity: 0, x: -20 }}
+                       animate={{ opacity: 1, x: 0 }}
+                       transition={{ delay: index * 0.05 }}
+                       className="premium-card p-6 sm:p-8 flex flex-col md:flex-row md:items-center gap-6 group"
+                     >
+                       <div className="flex-1 space-y-4">
+                          <div className="flex items-start justify-between">
+                            <div>
+                               <span className="text-[10px] font-extrabold uppercase tracking-widest text-primary bg-primary/5 px-2 py-1 rounded-lg mb-2 inline-block">
+                                 {booking.eventType.title}
+                               </span>
+                               <h3 className="text-2xl font-bold text-slate-900">{booking.bookerName}</h3>
+                               <p className="text-sm font-semibold text-slate-400 mt-0.5">{booking.bookerEmail}</p>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-emerald-600 text-[10px] font-extrabold uppercase tracking-widest bg-emerald-50 px-3 py-1.5 rounded-full shadow-sm shadow-emerald-100">
+                               <CheckCircle2 size={12} />
+                               Active
+                            </div>
+                          </div>
+                          
+                          <div className="flex flex-wrap gap-6 pt-2">
+                             <div className="flex items-center gap-2.5 text-slate-600">
+                                <div className="p-2 bg-slate-100 rounded-xl">
+                                  <Calendar size={18} className="text-slate-500" />
+                                </div>
+                                <span className="font-bold text-sm tracking-tight">{format(new Date(booking.startTime), 'EEEE, MMM d, yyyy')}</span>
+                             </div>
+                             <div className="flex items-center gap-2.5 text-slate-600">
+                                <div className="p-2 bg-slate-100 rounded-xl">
+                                  <Clock size={18} className="text-slate-500" />
+                                </div>
+                                <span className="font-bold text-sm tracking-tight">{format(new Date(booking.startTime), 'h:mm a')}</span>
+                             </div>
+                          </div>
+                       </div>
+
+                       <div className="flex md:flex-col gap-2 pt-4 md:pt-0 border-t md:border-t-0 md:border-l border-slate-100 md:pl-6">
+                         <Button
+                           variant="ghost"
+                           className="flex-1 md:w-32 rounded-xl font-bold text-primary hover:bg-primary/5 h-11"
+                           onClick={() => openRescheduleDialog(booking)}
+                         >
+                           Reschedule
+                         </Button>
+                         <Button 
+                           variant="ghost" 
+                           className="flex-1 md:w-32 rounded-xl font-bold text-red-500 hover:bg-red-50 h-11"
+                           onClick={() => openCancelDialog(booking.id)}
+                         >
+                           Cancel
+                         </Button>
+                       </div>
+                     </motion.div>
+                   ))}
+                 </AnimatePresence>
+               </motion.div>
+             )}
+          </TabsContent>
+
+          <TabsContent value="past" className="m-0 space-y-6">
+             {past.length === 0 ? (
+               <div className="premium-card p-20 text-center">
+                  <XCircle className="mx-auto h-12 w-12 text-slate-300 mb-4" />
+                  <p className="text-slate-500 font-bold text-lg">No past bookings found.</p>
+               </div>
+             ) : (
+               <div className="grid gap-6">
+                 {past.map((booking, index) => (
+                   <motion.div
+                     key={booking.id}
+                     initial={{ opacity: 0 }}
+                     animate={{ opacity: 1 }}
+                     transition={{ delay: index * 0.05 }}
+                     className="premium-card p-6 sm:p-8 opacity-70 grayscale-[0.5] hover:grayscale-0 transition-all flex flex-col md:flex-row md:items-center gap-6"
+                   >
+                     <div className="flex-1 space-y-4">
+                        <div className="flex items-start justify-between">
+                          <div>
+                             <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 bg-slate-100 px-2 py-1 rounded-lg mb-2 inline-block">
+                               {booking.eventType.title}
+                             </span>
+                             <h3 className="text-xl font-bold text-slate-900">{booking.bookerName}</h3>
+                             <p className="text-xs font-semibold text-slate-400">{booking.bookerEmail}</p>
+                          </div>
+                          <div className={`flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-widest px-3 py-1.5 rounded-full ${
+                             booking.status === 'active' ? 'text-slate-600 bg-slate-100' : 'text-red-500 bg-red-50'
+                          }`}>
+                             {booking.status === 'active' ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
+                             {booking.status === 'active' ? 'Past' : 'Cancelled'}
+                          </div>
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-6 pt-1">
+                           <div className="flex items-center gap-2.5 text-slate-500">
+                             <Calendar size={16} />
+                             <span className="font-bold text-xs">{format(new Date(booking.startTime), 'MMM d, yyyy')}</span>
+                           </div>
+                           <div className="flex items-center gap-2.5 text-slate-500">
+                             <Clock size={16} />
+                             <span className="font-bold text-xs">{format(new Date(booking.startTime), 'h:mm a')}</span>
+                           </div>
+                        </div>
+                     </div>
+                   </motion.div>
+                 ))}
+               </div>
+             )}
+          </TabsContent>
         </Tabs>
-      </Card>
-    </div>
+      </div>
+
+      <Dialog open={!!cancelBookingId} onOpenChange={(open) => !open && setCancelBookingId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Cancel Booking</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to cancel this booking?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCancelBookingId(null)}>Keep booking</Button>
+            <Button
+              variant="destructive"
+              onClick={() => cancelBookingId && handleCancel(cancelBookingId)}
+            >
+              Yes, cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!rescheduleBooking} onOpenChange={(open) => {
+        if (!open) {
+          setRescheduleBooking(null)
+          setRescheduleDateTime('')
+        }
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reschedule Booking</DialogTitle>
+            <DialogDescription>
+              Choose a new date and time for this booking.
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            type="datetime-local"
+            value={rescheduleDateTime}
+            onChange={(e) => setRescheduleDateTime(e.target.value)}
+          />
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setRescheduleBooking(null)
+                setRescheduleDateTime('')
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => rescheduleBooking && handleReschedule(rescheduleBooking)}
+              disabled={!rescheduleDateTime}
+            >
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </motion.div>
   )
 }

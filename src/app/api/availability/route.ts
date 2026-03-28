@@ -1,22 +1,28 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { revalidateTag, unstable_cache } from 'next/cache'
+import { auth } from '@/lib/auth'
 
-async function getMockSessionUserId() {
-  const user = await prisma.user.findFirst()
-  return user?.id
-}
+const getAvailabilityCached = unstable_cache(
+  async (userId: string) => {
+    return prisma.availability.findMany({
+      where: { userId },
+      orderBy: { dayOfWeek: 'asc' },
+    })
+  },
+  ['api-availability-by-user'],
+  { revalidate: 120, tags: ['availability'] }
+)
 
 export async function GET() {
   try {
-    const userId = await getMockSessionUserId()
+    const session = await auth()
+    const userId = session?.user?.id
     if (!userId) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    const availability = await prisma.availability.findMany({
-      where: { userId },
-      orderBy: { dayOfWeek: 'asc' },
-    })
+    const availability = await getAvailabilityCached(userId)
 
     return NextResponse.json(availability)
   } catch (error) {
@@ -27,7 +33,8 @@ export async function GET() {
 
 export async function PUT(request: Request) {
   try {
-    const userId = await getMockSessionUserId()
+    const session = await auth()
+    const userId = session?.user?.id
     if (!userId) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
@@ -69,6 +76,9 @@ export async function PUT(request: Request) {
       where: { userId },
       orderBy: { dayOfWeek: 'asc' },
     })
+
+    revalidateTag('availability', 'max')
+    revalidateTag('slots', 'max')
 
     return NextResponse.json(updatedAvailability)
   } catch (error) {

@@ -38,6 +38,8 @@ export default function PublicBookingPage({
   const [loadingEventType, setLoadingEventType] = useState(true)
   const [loadingSlots, setLoadingSlots] = useState(false)
   const [availability, setAvailability] = useState<number[]>([]) // Weekdays available
+  const [isDesktop, setIsDesktop] = useState(false)
+  const [skipInitialSlotsFetch, setSkipInitialSlotsFetch] = useState(false)
   
   // Booking form state
   const [step, setStep] = useState<'datetime' | 'details'>('datetime')
@@ -50,10 +52,21 @@ export default function PublicBookingPage({
   }, [params.slug, params.username])
 
   useEffect(() => {
+    const onResize = () => setIsDesktop(window.innerWidth >= 1024)
+    onResize()
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
+  useEffect(() => {
     if (selectedDate && eventType) {
+      if (skipInitialSlotsFetch) {
+        setSkipInitialSlotsFetch(false)
+        return
+      }
       fetchSlots(selectedDate)
     }
-  }, [selectedDate, eventType])
+  }, [selectedDate, eventType, skipInitialSlotsFetch])
 
   const fetchEventType = async () => {
     try {
@@ -66,6 +79,7 @@ export default function PublicBookingPage({
         setEventType(data.eventType)
         setSlots(data.slots)
         setAvailability(data.availabilityDays ?? [])
+        setSkipInitialSlotsFetch(true)
       }
     } catch (err) {
       toast.error('Failed to load event details')
@@ -136,7 +150,7 @@ export default function PublicBookingPage({
         <Card className="overflow-hidden border border-gray-200 shadow-2xl bg-white rounded-2xl">
           <div className="flex flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x divide-gray-200">
             {/* Column 1: Info - Hidden on mobile in details step */}
-            {(step === 'datetime' || window.innerWidth >= 1024) && (
+            {(step === 'datetime' || isDesktop) && (
             <div className="lg:w-1/3 p-6 sm:p-8 space-y-6 bg-gradient-to-b from-blue-50 to-white">
               <button 
                 onClick={() => step === 'details' ? setStep('datetime') : router.back()}

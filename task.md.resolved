@@ -46,11 +46,11 @@
 > Most visible part — evaluators will use this directly. Match Cal.com's 3-column booking layout exactly. Use react-day-picker for the calendar.
 
 ## Phase 5: Bonus features (if time permits) (optional)
-- [ ] Responsive design — mobile and tablet layouts with Tailwind breakpoints
-- [ ] Email notifications via Resend or Nodemailer on booking confirmation/cancellation
-- [ ] Rescheduling flow — update booking's date/time, check slot availability in MySQL
-- [ ] Buffer time — add buffer_after_minutes column to event_types table
-- [ ] Date overrides table — MySQL table for blocked dates or custom hour ranges
+- [x] Responsive design — mobile and tablet layouts with Tailwind breakpoints
+- [x] Email notifications via Resend or Nodemailer on booking confirmation/cancellation
+- [x] Rescheduling flow — update booking's date/time, check slot availability in MySQL
+- [x] Buffer time — add buffer_after_minutes column to event_types table
+- [x] Date overrides table — MySQL table for blocked dates or custom hour ranges
 > [!IMPORTANT]  
 > Only attempt after all 4 core modules are working end-to-end. A polished core is far better than broken bonus features.
 
