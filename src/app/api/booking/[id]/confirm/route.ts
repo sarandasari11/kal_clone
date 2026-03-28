@@ -10,9 +10,13 @@ export async function GET(
     const booking = await prisma.booking.findUnique({
       where: { id },
       include: {
-        eventType: true,
-        user: { select: { name: true, username: true } },
-      },
+        eventType: {
+          select: {
+            title: true,
+            duration: true
+          }
+        }
+      }
     })
 
     if (!booking) {

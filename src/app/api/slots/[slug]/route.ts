@@ -39,6 +39,22 @@ export async function GET(
     })
 
     if (!availability || !availability.isAvailable) {
+      if (searchParams.get('info') === 'true') {
+        return NextResponse.json({
+          slots: [],
+          eventType: {
+            id: eventType.id,
+            title: eventType.title,
+            description: eventType.description,
+            duration: eventType.duration,
+            slug: eventType.slug,
+            user: {
+              name: eventType.user.name,
+              username: eventType.user.username
+            }
+          }
+        })
+      }
       return NextResponse.json([])
     }
 
@@ -86,6 +102,23 @@ export async function GET(
       }
 
       currentSlot = addMinutes(currentSlot, eventType.duration)
+    }
+
+    if (searchParams.get('info') === 'true') {
+       return NextResponse.json({
+          slots,
+          eventType: {
+            id: eventType.id,
+            title: eventType.title,
+            description: eventType.description,
+            duration: eventType.duration,
+            slug: eventType.slug,
+             user: {
+                 name: eventType.user.name,
+                 username: eventType.user.username
+             }
+          }
+       })
     }
 
     return NextResponse.json(slots)

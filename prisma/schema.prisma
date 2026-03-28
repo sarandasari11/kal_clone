@@ -1,80 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-}
-
 model User {
-  id        String   @id @default(uuid()) @db.Char(36)
-  email     String   @unique
-  name      String?
-  username  String   @unique
-  
-  eventTypes   EventType[]
+  id           String         @id @default(uuid()) @db.Char(36)
+  email        String         @unique
+  name         String?
+  username     String         @unique
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
   availability Availability[]
   bookings     Booking[]
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  eventTypes   EventType[]
 }
 
 model EventType {
-  id          String   @id @default(uuid()) @db.Char(36)
-  userId      String   @db.Char(36)
-  user        User     @relation(fields: [userId], references: [id])
-  
+  id          String    @id @default(uuid()) @db.Char(36)
+  userId      String    @db.Char(36)
   title       String
-  description String?  @db.Text
-  duration    Int      // length of event in minutes
+  description String?   @db.Text
+  duration    Int
   slug        String
-  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   bookings    Booking[]
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  user        User      @relation(fields: [userId], references: [id])
 
   @@unique([userId, slug])
 }
 
 model Availability {
-  id        String   @id @default(uuid()) @db.Char(36)
-  userId    String   @db.Char(36)
-  user      User     @relation(fields: [userId], references: [id])
-  
-  dayOfWeek Int      // 0 for Sunday, 1 for Monday...
-  startTime DateTime @db.Time()
-  endTime   DateTime @db.Time()
-  
-  isAvailable Boolean @default(true) @db.TinyInt
-  
+  id          String   @id @default(uuid()) @db.Char(36)
+  userId      String   @db.Char(36)
+  dayOfWeek   Int
+  startTime   DateTime @db.Time(0)
+  endTime     DateTime @db.Time(0)
+  isAvailable Boolean  @default(true)
+  user        User     @relation(fields: [userId], references: [id])
+
   @@unique([userId, dayOfWeek])
+}
+
+model Booking {
+  id          String        @id @default(uuid()) @db.Char(36)
+  eventTypeId String        @db.Char(36)
+  userId      String        @db.Char(36)
+  bookerName  String
+  bookerEmail String
+  startTime   DateTime
+  endTime     DateTime
+  status      BookingStatus @default(active)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  eventType   EventType     @relation(fields: [eventTypeId], references: [id])
+  user        User          @relation(fields: [userId], references: [id])
+
+  @@index([eventTypeId], map: "Booking_eventTypeId_fkey")
+  @@index([userId], map: "Booking_userId_fkey")
 }
 
 enum BookingStatus {
   active
   cancelled
-}
-
-model Booking {
-  id          String   @id @default(uuid()) @db.Char(36)
-  
-  eventTypeId String   @db.Char(36)
-  eventType   EventType @relation(fields: [eventTypeId], references: [id])
-  
-  userId      String   @db.Char(36)
-  user        User     @relation(fields: [userId], references: [id])
-  
-  bookerName  String
-  bookerEmail String
-  
-  startTime   DateTime
-  endTime     DateTime
-  
-  status      BookingStatus @default(active)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
 }

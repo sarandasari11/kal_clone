@@ -181,8 +181,11 @@ export default function EventTypesPage() {
                 <div className="flex items-center justify-between">
                   <div className="h-4 w-4 rounded-full bg-green-500" />
                   <div className="flex gap-2">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500 hover:text-gray-900" onClick={() => copyLink(et.slug)}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500 hover:text-gray-900" onClick={() => copyLink(et.slug)} title="Copy booking link">
                       <Copy size={16} />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500 hover:bg-blue-50 hover:text-blue-700" onClick={() => window.open(`/admin/${et.slug}`, '_blank')} title="View live page">
+                      <ExternalLink size={16} />
                     </Button>
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-700" onClick={() => handleDelete(et.id)}>
                       <Trash size={16} />
