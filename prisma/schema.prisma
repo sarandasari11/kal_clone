@@ -1,0 +1,80 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(uuid()) @db.Char(36)
+  email     String   @unique
+  name      String?
+  username  String   @unique
+  
+  eventTypes   EventType[]
+  availability Availability[]
+  bookings     Booking[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model EventType {
+  id          String   @id @default(uuid()) @db.Char(36)
+  userId      String   @db.Char(36)
+  user        User     @relation(fields: [userId], references: [id])
+  
+  title       String
+  description String?  @db.Text
+  duration    Int      // length of event in minutes
+  slug        String
+  
+  bookings    Booking[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, slug])
+}
+
+model Availability {
+  id        String   @id @default(uuid()) @db.Char(36)
+  userId    String   @db.Char(36)
+  user      User     @relation(fields: [userId], references: [id])
+  
+  dayOfWeek Int      // 0 for Sunday, 1 for Monday...
+  startTime DateTime @db.Time()
+  endTime   DateTime @db.Time()
+  
+  isAvailable Boolean @default(true) @db.TinyInt
+  
+  @@unique([userId, dayOfWeek])
+}
+
+enum BookingStatus {
+  active
+  cancelled
+}
+
+model Booking {
+  id          String   @id @default(uuid()) @db.Char(36)
+  
+  eventTypeId String   @db.Char(36)
+  eventType   EventType @relation(fields: [eventTypeId], references: [id])
+  
+  userId      String   @db.Char(36)
+  user        User     @relation(fields: [userId], references: [id])
+  
+  bookerName  String
+  bookerEmail String
+  
+  startTime   DateTime
+  endTime     DateTime
+  
+  status      BookingStatus @default(active)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
