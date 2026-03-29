@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Calendar, Loader2, Lock, Mail, ArrowRight } from 'lucide-react'
 import { getSession, signIn } from 'next-auth/react'
@@ -9,6 +9,14 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-[#f8fafc] text-slate-500">Loading...</div>}>
+      <LoginContent />
+    </Suspense>
+  )
+}
+
+function LoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const errorParam = searchParams.get('error')
@@ -181,7 +189,7 @@ export default function LoginPage() {
           transition={{ delay: 0.8 }}
           className="mt-8 text-center text-sm font-bold text-slate-400"
         >
-          Don't have an account? <button className="text-primary hover:underline">Get started for free</button>
+          Don&apos;t have an account? <button className="text-primary hover:underline">Get started for free</button>
         </motion.p>
       </motion.div>
     </div>

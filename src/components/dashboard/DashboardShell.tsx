@@ -2,12 +2,11 @@
 
 import { 
   Calendar, 
+  Code2,
   Clock, 
   Layers, 
   LogOut,
   User,
-  Menu,
-  X,
   ExternalLink
 } from 'lucide-react'
 import Link from 'next/link'
@@ -16,6 +15,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { signOut } from 'next-auth/react'
 import { motion } from 'framer-motion'
 import React from 'react'
+import type { Session } from 'next-auth'
 
 const navItems = [
   { name: 'Event Types', href: '/event-types', icon: Layers },
@@ -28,7 +28,7 @@ export function DashboardShell({
   session 
 }: { 
   children: React.ReactNode, 
-  session: any 
+  session: Session | null
 }) {
   const pathname = usePathname()
 
@@ -76,7 +76,31 @@ export function DashboardShell({
                 </Link>
               )
             })}
+
+            <div className="mt-6 rounded-2xl border border-blue-100 bg-blue-50/60 px-3 py-3">
+              <p className="text-[10px] font-extrabold uppercase tracking-widest text-blue-700">Note</p>
+              <div className="mt-2 flex items-center gap-2 text-xs font-semibold text-slate-700">
+                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+                  <ExternalLink size={12} />
+                </span>
+                Rounded external-link symbol refers to public page.
+              </div>
+            </div>
           </nav>
+
+          <div className="px-4 pb-2">
+            <Link
+              href="/developer"
+              className={`relative flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-all duration-300 ${
+                pathname === '/developer'
+                  ? 'text-primary bg-primary/5 border border-primary/10'
+                  : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
+              }`}
+            >
+              <Code2 size={20} className={pathname === '/developer' ? 'text-primary' : 'text-slate-400'} />
+              <span>Developer</span>
+            </Link>
+          </div>
 
           {/* User Profile */}
           <div className="p-4 mt-auto">

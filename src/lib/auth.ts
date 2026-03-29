@@ -38,14 +38,18 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
     jwt({ token, user }) {
       if (user) {
         token.id = user.id
-        token.username = (user as any).username
+        token.username = (user as { username?: string }).username
       }
       return token
     },
     session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string
-        (session.user as any).username = token.username as string
+        const user = session.user as typeof session.user & {
+          id?: string
+          username?: string
+        }
+        user.id = token.id as string
+        user.username = token.username as string
       }
       return session
     }

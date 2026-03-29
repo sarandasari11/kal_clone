@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Outfit } from "next/font/google";
 import "./globals.css";
 
@@ -20,8 +20,13 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "KalClone - Online Booking Calendar",
   description: "Easy scheduling and appointment booking with KalClone. Manage your calendar, set availability, and let people book time with you.",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=5",
 };
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+}
 
 export default function RootLayout({
   children,
@@ -31,7 +36,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${outfit.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${outfit.variable} ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-900">{children}</body>
     </html>

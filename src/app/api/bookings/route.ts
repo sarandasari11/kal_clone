@@ -48,7 +48,7 @@ export async function POST(request: Request) {
     const start = new Date(startTime)
     const eventType = await prisma.eventType.findUnique({
       where: { id: eventTypeId },
-    }) as any
+    })
 
     if (!eventType) {
       return NextResponse.json({ error: 'Event type not found' }, { status: 404 })
@@ -60,10 +60,8 @@ export async function POST(request: Request) {
     // Note: Prisma 5+ transaction isolation needs to be set properly for SERIALIZABLE if needed
     // or use explicit raw queries for FOR UPDATE.
     const booking = await prisma.$transaction(async (tx) => {
-      const txAny = tx as any
-
       // 1. Check for overlapping active bookings (buffer-aware)
-      const activeBookings = await txAny.booking.findMany({
+      const activeBookings = await tx.booking.findMany({
         where: {
           userId: eventType.userId,
           status: 'active',
@@ -79,7 +77,7 @@ export async function POST(request: Request) {
 
       const requestedEndWithBuffer = addMinutes(end, eventType.bufferAfterMinutes)
 
-      const overlaps = activeBookings.filter((existing: any) => {
+      const overlaps = activeBookings.filter((existing) => {
         const existingEndWithBuffer = addMinutes(
           existing.endTime,
           existing.eventType.bufferAfterMinutes
@@ -93,7 +91,7 @@ export async function POST(request: Request) {
       }
 
       // 2. Insert new booking
-      return txAny.booking.create({
+      return tx.booking.create({
         data: {
           eventTypeId,
           userId: eventType.userId,
@@ -133,9 +131,9 @@ export async function POST(request: Request) {
     revalidateTag('slots', 'max')
 
     return NextResponse.json(booking, { status: 201 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('POST /api/bookings error:', error)
-    if (error.message === 'Slot already booked') {
+    if (error instanceof Error && error.message === 'Slot already booked') {
       return NextResponse.json({ error: 'This time slot is no longer available' }, { status: 409 })
     }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })

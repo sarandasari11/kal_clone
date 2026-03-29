@@ -3,6 +3,13 @@ import { prisma } from '@/lib/db'
 import { revalidateTag, unstable_cache } from 'next/cache'
 import { auth } from '@/lib/auth'
 
+interface AvailabilityDayInput {
+  dayOfWeek: number
+  startTime: string
+  endTime: string
+  isAvailable?: boolean
+}
+
 const getAvailabilityCached = unstable_cache(
   async (userId: string) => {
     return prisma.availability.findMany({
@@ -39,8 +46,8 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    const body = await request.json()
-    const { days } = body // Expects an array of availability objects
+    const body = await request.json() as { days?: AvailabilityDayInput[] }
+    const { days } = body
 
     if (!Array.isArray(days)) {
       return NextResponse.json({ error: 'Invalid payload: days should be an array' }, { status: 400 })
@@ -48,12 +55,12 @@ export async function PUT(request: Request) {
 
     // Use a transaction to update availability efficiently
     await prisma.$transaction(
-      days.map((d: any) =>
+      days.map((d) =>
         prisma.availability.upsert({
           where: {
             userId_dayOfWeek: {
               userId,
-              dayOfWeek: parseInt(d.dayOfWeek),
+              dayOfWeek: Number(d.dayOfWeek),
             },
           },
           update: {
@@ -63,8 +70,8 @@ export async function PUT(request: Request) {
           },
           create: {
             userId,
-            dayOfWeek: parseInt(d.dayOfWeek),
-             startTime: new Date(`1970-01-01T${d.startTime}:00Z`),
+            dayOfWeek: Number(d.dayOfWeek),
+            startTime: new Date(`1970-01-01T${d.startTime}:00Z`),
             endTime: new Date(`1970-01-01T${d.endTime}:00Z`),
             isAvailable: d.isAvailable ?? true,
           },

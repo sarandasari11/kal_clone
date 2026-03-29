@@ -26,6 +26,21 @@ interface DateOverride {
   isBlocked: boolean
 }
 
+interface AvailabilityApiItem {
+  dayOfWeek: number
+  startTime: string
+  endTime: string
+  isAvailable: boolean
+}
+
+interface DateOverrideApiItem {
+  id: string
+  date: string
+  startTime: string | null
+  endTime: string | null
+  isBlocked: boolean
+}
+
 const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
 export default function AvailabilityPage() {
@@ -53,8 +68,9 @@ export default function AvailabilityPage() {
       const res = await fetch('/api/availability')
       const data = await res.json()
       if (res.ok) {
+        const rows = data as AvailabilityApiItem[]
         // Map response to a clean format
-        const formatted = data.map((d: any) => ({
+        const formatted = rows.map((d) => ({
           dayOfWeek: d.dayOfWeek,
           startTime: new Date(d.startTime).toISOString().substr(11, 5),
           endTime: new Date(d.endTime).toISOString().substr(11, 5),
@@ -63,7 +79,7 @@ export default function AvailabilityPage() {
         
         // Ensure all days are present
         const fullWeek = Array.from({ length: 7 }, (_, i) => {
-          const existing = formatted.find((f: any) => f.dayOfWeek === i)
+          const existing = formatted.find((f) => f.dayOfWeek === i)
           return existing || { dayOfWeek: i, startTime: '09:00', endTime: '17:00', isAvailable: false }
         })
         setAvailability(fullWeek)
@@ -80,7 +96,8 @@ export default function AvailabilityPage() {
       const res = await fetch('/api/date-overrides')
       const data = await res.json()
       if (res.ok) {
-        const formatted = data.map((d: any) => ({
+        const rows = data as DateOverrideApiItem[]
+        const formatted = rows.map((d) => ({
           ...d,
           startTime: d.startTime ? new Date(d.startTime).toISOString().slice(11, 16) : null,
           endTime: d.endTime ? new Date(d.endTime).toISOString().slice(11, 16) : null,

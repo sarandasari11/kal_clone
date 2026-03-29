@@ -5,8 +5,7 @@ import { auth } from '@/lib/auth'
 
 const getDateOverridesCached = unstable_cache(
   async (userId: string) => {
-    const prismaAny = prisma as any
-    return prismaAny.dateOverride.findMany({
+    return prisma.dateOverride.findMany({
       where: { userId },
       orderBy: { date: 'asc' },
     })
@@ -34,8 +33,6 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const prismaAny = prisma as any
-
     const session = await auth()
     const userId = session?.user?.id
     if (!userId) {
@@ -60,7 +57,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'startTime and endTime are required for custom hours' }, { status: 400 })
     }
 
-    const existing = await prismaAny.dateOverride.findFirst({
+    const existing = await prisma.dateOverride.findFirst({
       where: {
         userId,
         date: normalizedDate,
@@ -76,11 +73,11 @@ export async function POST(request: Request) {
     }
 
     const override = existing
-      ? await prismaAny.dateOverride.update({
+      ? await prisma.dateOverride.update({
           where: { id: existing.id },
           data,
         })
-      : await prismaAny.dateOverride.create({ data })
+      : await prisma.dateOverride.create({ data })
 
     revalidateTag('date-overrides', 'max')
     revalidateTag('slots', 'max')

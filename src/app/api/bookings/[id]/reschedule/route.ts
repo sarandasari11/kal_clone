@@ -32,7 +32,7 @@ export async function PATCH(
       include: {
         eventType: true,
       },
-    }) as any
+    })
 
     if (!current) {
       return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
@@ -49,9 +49,7 @@ export async function PATCH(
     const nextEnd = addMinutes(nextStart, current.eventType.duration)
 
     const updated = await prisma.$transaction(async (tx) => {
-      const txAny = tx as any
-
-      const activeBookings = await txAny.booking.findMany({
+      const activeBookings = await tx.booking.findMany({
         where: {
           userId: current.userId,
           status: 'active',
@@ -68,7 +66,7 @@ export async function PATCH(
 
       const requestedEndWithBuffer = addMinutes(nextEnd, current.eventType.bufferAfterMinutes)
 
-      const overlaps = activeBookings.some((existing: any) => {
+      const overlaps = activeBookings.some((existing) => {
         const existingEndWithBuffer = addMinutes(
           existing.endTime,
           existing.eventType.bufferAfterMinutes
@@ -81,7 +79,7 @@ export async function PATCH(
         throw new Error('Slot already booked')
       }
 
-      return txAny.booking.update({
+      return tx.booking.update({
         where: { id },
         data: {
           startTime: nextStart,
@@ -117,9 +115,9 @@ export async function PATCH(
     revalidateTag('slots', 'max')
 
     return NextResponse.json(updated)
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('PATCH /api/bookings/[id]/reschedule error:', error)
-    if (error.message === 'Slot already booked') {
+    if (error instanceof Error && error.message === 'Slot already booked') {
       return NextResponse.json({ error: 'This time slot is no longer available' }, { status: 409 })
     }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })

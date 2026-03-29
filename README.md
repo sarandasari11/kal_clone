@@ -36,7 +36,20 @@ npm install
 ```
 
 ### 3. Environment Setup
-Create a `.env` file in the root directory:
+Copy `.env.example` to `.env` and fill in your values:
+
+```bash
+cp .env.example .env
+```
+
+If you are on Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Then update `.env`:
+
 ```env
 # Database
 DATABASE_URL="mysql://user:password@host:3306/db_name"
@@ -52,8 +65,8 @@ RESEND_API_KEY="re_..."
 ### 4. Database Initialization
 ```bash
 npx prisma generate
-npx prisma db push
-npx prisma db seed # Optional: Adds test user admin@example.com / password123
+npx prisma migrate dev
+npx prisma db seed # Adds test user admin@example.com / password123
 ```
 
 ### 5. Start Development
@@ -64,12 +77,26 @@ npm run dev
 ## 🚢 Deployment
 
 ### 1. Database (Railway/PlanetScale)
-Ensure your production database allows external connections and update your `DATABASE_URL` in the production environment settings.
+Ensure your production database allows external connections and update `DATABASE_URL` in your production environment settings.
+
+Apply migrations and seed production data:
+
+```bash
+npx prisma generate
+npx prisma migrate deploy
+npx prisma db seed
+```
 
 ### 2. Frontend (Vercel)
 - Connect your repository to Vercel.
 - Configure all environment variables from your `.env` file.
 - Vercel will automatically detect the Next.js project and deploy.
+
+## Assumptions
+
+- Database engine is MySQL 8.
+- Production schema changes are applied through Prisma migrations, not `db push`.
+- Seed data is safe to run repeatedly for demo/testing purposes.
 
 ## 📄 License
 This project is licensed under the MIT License.

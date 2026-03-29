@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Calendar, Clock, Loader2, XCircle, CheckCircle2 } from 'lucide-react'
+import { Calendar, Clock, Loader2, XCircle, CheckCircle2, ArrowUpDown, Timer, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { 
   Table, 
@@ -35,16 +35,24 @@ interface Booking {
   status: 'active' | 'cancelled'
   eventType: {
     title: string
+    duration?: number
   }
 }
+
+type UpcomingSortOption = 'next-first' | 'short-first' | 'long-first'
+type PastSortOption = 'recent-first' | 'oldest-first' | 'cancelled-first'
 
 export default function BookingsPage() {
   const [upcoming, setUpcoming] = useState<Booking[]>([])
   const [past, setPast] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
   const [cancelBookingId, setCancelBookingId] = useState<string | null>(null)
+  const [removeBookingId, setRemoveBookingId] = useState<string | null>(null)
   const [rescheduleBooking, setRescheduleBooking] = useState<Booking | null>(null)
   const [rescheduleDateTime, setRescheduleDateTime] = useState('')
+  const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>('upcoming')
+  const [upcomingSort, setUpcomingSort] = useState<UpcomingSortOption>('next-first')
+  const [pastSort, setPastSort] = useState<PastSortOption>('recent-first')
 
   useEffect(() => {
     fetchBookings()
@@ -110,6 +118,25 @@ export default function BookingsPage() {
     }
   }
 
+  const handleRemove = async (id: string) => {
+    try {
+      const res = await fetch(`/api/bookings/${id}`, {
+        method: 'DELETE',
+      })
+
+      if (res.ok) {
+        toast.success('Booking removed')
+        setRemoveBookingId(null)
+        fetchBookings()
+      } else {
+        const err = await res.json()
+        toast.error(err.error || 'Failed to remove booking')
+      }
+    } catch {
+      toast.error('Something went wrong')
+    }
+  }
+
   const openCancelDialog = (id: string) => {
     setCancelBookingId(id)
   }
@@ -118,6 +145,54 @@ export default function BookingsPage() {
     setRescheduleBooking(booking)
     setRescheduleDateTime(format(new Date(booking.startTime), "yyyy-MM-dd'T'HH:mm"))
   }
+
+  const getDurationMinutes = (booking: Booking) => {
+    if (typeof booking.eventType.duration === 'number') {
+      return booking.eventType.duration
+    }
+
+    const start = new Date(booking.startTime).getTime()
+    const end = new Date(booking.endTime).getTime()
+    const diff = Math.round((end - start) / 60000)
+    return Number.isFinite(diff) && diff > 0 ? diff : 0
+  }
+
+  const sortedUpcoming = [...upcoming].sort((a, b) => {
+    const aStart = new Date(a.startTime).getTime()
+    const bStart = new Date(b.startTime).getTime()
+
+    if (upcomingSort === 'next-first') {
+      return aStart - bStart
+    }
+
+    const aDuration = getDurationMinutes(a)
+    const bDuration = getDurationMinutes(b)
+
+    if (upcomingSort === 'short-first') {
+      if (aDuration !== bDuration) return aDuration - bDuration
+      return aStart - bStart
+    }
+
+    if (aDuration !== bDuration) return bDuration - aDuration
+    return aStart - bStart
+  })
+
+  const sortedPast = [...past].sort((a, b) => {
+    const aStart = new Date(a.startTime).getTime()
+    const bStart = new Date(b.startTime).getTime()
+
+    if (pastSort === 'oldest-first') {
+      return aStart - bStart
+    }
+
+    if (pastSort === 'cancelled-first') {
+      if (a.status !== b.status) {
+        return a.status === 'cancelled' ? -1 : 1
+      }
+    }
+
+    return bStart - aStart
+  })
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-[400px]">
@@ -277,17 +352,47 @@ export default function BookingsPage() {
           <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">Bookings</h1>
           <p className="text-slate-500 mt-2 font-medium text-lg italic">Track and manage your scheduled appointments.</p>
         </div>
+        <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
+          <ArrowUpDown size={16} className="text-slate-500" />
+          <label htmlFor="booking-sort" className="text-sm font-semibold text-slate-700">Sort by</label>
+          <select
+            id="booking-sort"
+            value={activeTab === 'upcoming' ? upcomingSort : pastSort}
+            onChange={(e) => {
+              if (activeTab === 'upcoming') {
+                setUpcomingSort(e.target.value as UpcomingSortOption)
+              } else {
+                setPastSort(e.target.value as PastSortOption)
+              }
+            }}
+            className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-sm font-medium text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+          >
+            {activeTab === 'upcoming' ? (
+              <>
+                <option value="next-first">Next meetings first</option>
+                <option value="short-first">Short meetings first</option>
+                <option value="long-first">Long meetings first</option>
+              </>
+            ) : (
+              <>
+                <option value="recent-first">Recent meetings first</option>
+                <option value="oldest-first">Oldest meetings first</option>
+                <option value="cancelled-first">Cancelled first</option>
+              </>
+            )}
+          </select>
+        </div>
       </div>
 
       <div className="w-full">
-        <Tabs defaultValue="upcoming" className="w-full">
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'upcoming' | 'past')} className="w-full">
           <TabsList className="bg-slate-100/80 p-1.5 mb-10 w-fit rounded-2xl border border-slate-200/50">
             <TabsTrigger value="upcoming" className="rounded-xl px-8 py-2.5 font-bold data-[state=active]:bg-white data-[state=active]:shadow-md transition-all">Upcoming</TabsTrigger>
             <TabsTrigger value="past" className="rounded-xl px-8 py-2.5 font-bold data-[state=active]:bg-white data-[state=active]:shadow-md transition-all">Past / Cancelled</TabsTrigger>
           </TabsList>
           
           <TabsContent value="upcoming" className="m-0 space-y-6">
-             {upcoming.length === 0 ? (
+             {sortedUpcoming.length === 0 ? (
                <div className="premium-card p-20 text-center">
                   <Calendar className="mx-auto h-12 w-12 text-slate-300 mb-4" />
                   <p className="text-slate-500 font-bold text-lg">No upcoming bookings found.</p>
@@ -295,7 +400,7 @@ export default function BookingsPage() {
              ) : (
                <motion.div layout className="grid gap-6">
                  <AnimatePresence mode="popLayout">
-                   {upcoming.map((booking, index) => (
+                   {sortedUpcoming.map((booking, index) => (
                      <motion.div
                        key={booking.id}
                        layout
@@ -332,6 +437,12 @@ export default function BookingsPage() {
                                 </div>
                                 <span className="font-bold text-sm tracking-tight">{format(new Date(booking.startTime), 'h:mm a')}</span>
                              </div>
+                              <div className="flex items-center gap-2.5 text-slate-600">
+                                <div className="p-2 bg-white rounded-xl shadow-sm">
+                                    <Timer size={18} className="text-secondary-foreground/60" />
+                                </div>
+                                <span className="font-bold text-sm tracking-tight">{getDurationMinutes(booking)} min</span>
+                              </div>
                           </div>
                        </div>
 
@@ -359,14 +470,14 @@ export default function BookingsPage() {
           </TabsContent>
 
           <TabsContent value="past" className="m-0 space-y-6">
-             {past.length === 0 ? (
+             {sortedPast.length === 0 ? (
                <div className="premium-card p-20 text-center">
                   <XCircle className="mx-auto h-12 w-12 text-slate-300 mb-4" />
                   <p className="text-slate-500 font-bold text-lg">No past bookings found.</p>
                </div>
              ) : (
                <div className="grid gap-6">
-                 {past.map((booking, index) => (
+                 {sortedPast.map((booking, index) => (
                    <motion.div
                      key={booking.id}
                      initial={{ opacity: 0 }}
@@ -402,6 +513,16 @@ export default function BookingsPage() {
                            </div>
                         </div>
                      </div>
+                     <div className="flex md:flex-col gap-2 pt-4 md:pt-0 border-t md:border-t-0 md:border-l border-slate-100 md:pl-6">
+                       <Button
+                         variant="ghost"
+                         className="flex-1 md:w-32 rounded-xl font-bold text-red-500 hover:bg-red-50 h-11"
+                         onClick={() => setRemoveBookingId(booking.id)}
+                       >
+                         <Trash2 size={16} className="mr-1" />
+                         Remove
+                       </Button>
+                     </div>
                    </motion.div>
                  ))}
                </div>
@@ -425,6 +546,26 @@ export default function BookingsPage() {
               onClick={() => cancelBookingId && handleCancel(cancelBookingId)}
             >
               Yes, cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!removeBookingId} onOpenChange={(open) => !open && setRemoveBookingId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Remove Booking</DialogTitle>
+            <DialogDescription>
+              This will permanently remove this booking from your records. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRemoveBookingId(null)}>Keep booking</Button>
+            <Button
+              variant="destructive"
+              onClick={() => removeBookingId && handleRemove(removeBookingId)}
+            >
+              Yes, remove
             </Button>
           </DialogFooter>
         </DialogContent>

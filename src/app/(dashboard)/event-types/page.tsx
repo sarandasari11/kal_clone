@@ -378,7 +378,7 @@ export default function EventTypesPage() {
                   
                   {et.description && (
                     <p className="mt-4 text-sm text-slate-500 line-clamp-2 font-medium leading-relaxed italic">
-                      "{et.description}"
+                      &quot;{et.description}&quot;
                     </p>
                   )}
                 </div>

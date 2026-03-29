@@ -19,7 +19,13 @@ const getSlotsDataCached = unstable_cache(
     })
 
     if (!eventType) {
-      return { notFound: true as const, slots: [], availabilityDays: [], eventType: null }
+      return {
+        notFound: true as const,
+        slots: [],
+        availabilityDays: [],
+        eventType: null,
+        isDateBlocked: false,
+      }
     }
 
     const [availabilityDays, dateOverride, availability] = await Promise.all([
@@ -58,6 +64,7 @@ const getSlotsDataCached = unstable_cache(
         slots: [],
         availabilityDays: availableWeekdays,
         eventType,
+        isDateBlocked: true,
       }
     }
 
@@ -68,6 +75,7 @@ const getSlotsDataCached = unstable_cache(
         slots: [],
         availabilityDays: availableWeekdays,
         eventType,
+        isDateBlocked: false,
       }
     }
 
@@ -143,6 +151,7 @@ const getSlotsDataCached = unstable_cache(
       slots,
       availabilityDays: availableWeekdays,
       eventType,
+      isDateBlocked: false,
     }
   },
   ['api-slots-by-slug-date'],
@@ -177,6 +186,7 @@ export async function GET(
        return NextResponse.json({
           slots: data.slots,
          availabilityDays: data.availabilityDays,
+         isDateBlocked: data.isDateBlocked,
           eventType: {
             id: data.eventType.id,
             title: data.eventType.title,
@@ -186,7 +196,8 @@ export async function GET(
             slug: data.eventType.slug,
              user: {
                  name: data.eventType.user.name,
-                 username: data.eventType.user.username
+               username: data.eventType.user.username,
+               timeZone: data.eventType.user.timeZone,
              }
           }
        })
