@@ -1,85 +1,155 @@
-# KalClone — Premium Scheduling Infrastructure
+# KalClone - Project Submission
 
-**KalClone** is a high-performance, SaaS-grade scheduling platform designed for modern professionals. Built with a focus on speed, aesthetics, and user experience, it serves as a powerful clone of Cal.com with advanced features like real-time availability computation, intelligent buffer times, and granular date overrides.
+KalClone is a scheduling application inspired by Cal.com. It includes:
+- Admin dashboard for event types, availability, and bookings
+- Public booking page by username and event slug
+- Slot computation with conflict checks and buffer time
+- Date overrides and timezone-aware availability
+- Booking lifecycle (create, cancel, reschedule, confirm)
 
-![Dashboard Preview](https://via.placeholder.com/1200x600?text=KalClone+Admin+Dashboard+Preview)
+## Tech Stack
+- Framework: Next.js 16 (App Router)
+- Language: TypeScript
+- UI: Tailwind CSS, shadcn/ui, Framer Motion, Lucide icons
+- Auth: NextAuth (Credentials, JWT session strategy)
+- Database: MySQL 8
+- ORM: Prisma
+- Date/Time: date-fns, date-fns-tz
+- Email: Resend or SMTP (Nodemailer fallback)
 
-## 🚀 Key Features
-
-- **Dynamic Admin Dashboard**: A glassmorphic, fluid interface for managing event types, availability, and bookings.
-- **Intelligent Slot Computation**: Real-time conflict detection with support for `bufferAfterMinutes` and `DateOverrides`.
-- **Public Booking Flow**: A beautiful, triple-pane public interface with instant slot selection and confirmation.
-- **Premium Design System**: Built with **Tailwind CSS**, **Framer Motion** animations, and the **Outfit** typography system for a high-end app feel.
-- **Robust Backend**: Powered by **Next.js App Router**, **Prisma ORM**, and **MySQL**, ensuring data integrity and scalability.
-
-## 🛠️ Tech Stack
-
-- **Framework**: [Next.js 15+](https://nextjs.org/) (App Router)
-- **Database**: [MySQL 8](https://www.mysql.com/) (Managed via Prisma)
-- **Auth**: [NextAuth.js](https://next-auth.js.org/) (Credentials & JWT)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
-- **Animations**: [Framer Motion](https://www.framer.com/motion/)
-- **ORM**: [Prisma](https://www.prisma.io/)
-- **Icons**: [Lucide React](https://lucide.dev/)
-
-## 🏁 Getting Started
+## Setup Instructions
 
 ### 1. Prerequisites
 - Node.js 18+
-- A running MySQL 8 instance (PlanetScale, Railway, or local)
+- npm 9+
+- MySQL 8 database (local or hosted: Railway/PlanetScale)
 
-### 2. Installation
+### 2. Install dependencies
 ```bash
-git clone <repository-url>
-cd cal_clone
 npm install
 ```
 
-### 3. Environment Setup
-Copy `.env.example` to `.env` and fill in your values:
+### 3. Configure environment variables
+Copy env template:
 
 ```bash
 cp .env.example .env
 ```
 
-If you are on Windows PowerShell:
+Windows PowerShell:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-Then update `.env`:
+Minimum required values in `.env`:
 
 ```env
-# Database
 DATABASE_URL="mysql://user:password@host:3306/db_name"
-
-# Auth
 NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="your-super-secret-key"
-
-# (Optional) Email
-RESEND_API_KEY="re_..."
+NEXTAUTH_SECRET="replace-with-a-long-random-secret"
 ```
 
-### 4. Database Initialization
+Optional values (email):
+
+```env
+RESEND_API_KEY=""
+SMTP_HOST=""
+SMTP_PORT="587"
+SMTP_USER=""
+SMTP_PASS=""
+SMTP_FROM=""
+```
+
+### 4. Initialize database
 ```bash
 npx prisma generate
 npx prisma migrate dev
-npx prisma db seed # Adds test user admin@example.com / password123
+npx prisma db seed
 ```
 
-### 5. Start Development
+### 5. Run locally
 ```bash
 npm run dev
 ```
 
-## 🚢 Deployment
+App runs at `http://localhost:3000`.
 
-### 1. Database (Railway/PlanetScale)
-Ensure your production database allows external connections and update `DATABASE_URL` in your production environment settings.
+## Scripts
+- `npm run dev` - start local dev server
+- `npm run build` - production build
+- `npm run start` - run production server
+- `npm run lint` - lint checks
 
-Apply migrations and seed production data:
+## Demo Credentials
+- Email: `admin@example.com`
+- Password: `password123`
+
+## Key Routes
+- Dashboard: `/event-types`, `/availability`, `/bookings`, `/developer`
+- Public booking: `/:username/:slug`
+- Confirmation: `/booking/confirmed?id=<bookingId>`
+
+## Folder Structure
+```text
+cal_clone/
+|- prisma/
+|  |- migrations/
+|  |- schema.prisma
+|  |- seed.ts
+|- public/
+|  |- saran formal.jpg
+|- src/
+|  |- app/
+|  |  |- layout.tsx
+|  |  |- page.tsx
+|  |  |- login/page.tsx
+|  |  |- booking/confirmed/page.tsx
+|  |  |- (dashboard)/
+|  |  |  |- layout.tsx
+|  |  |  |- availability/page.tsx
+|  |  |  |- bookings/page.tsx
+|  |  |  |- developer/page.tsx
+|  |  |  |- event-types/page.tsx
+|  |  |- [username]/[slug]/page.tsx
+|  |  |- api/
+|  |  |  |- auth/[...nextauth]/route.ts
+|  |  |  |- availability/route.ts
+|  |  |  |- booking/[id]/confirm/route.ts
+|  |  |  |- bookings/route.ts
+|  |  |  |- bookings/[id]/route.ts
+|  |  |  |- bookings/[id]/cancel/route.ts
+|  |  |  |- bookings/[id]/reschedule/route.ts
+|  |  |  |- date-overrides/route.ts
+|  |  |  |- date-overrides/[id]/route.ts
+|  |  |  |- event-types/route.ts
+|  |  |  |- event-types/[id]/route.ts
+|  |  |  |- slots/[slug]/route.ts
+|  |  |  |- user/route.ts
+|  |- components/
+|  |  |- dashboard/DashboardShell.tsx
+|  |  |- ui/*
+|  |- lib/
+|     |- auth.ts
+|     |- db.ts
+|     |- email.ts
+|- .env.example
+|- package.json
+|- README.md
+```
+
+## Assumptions Made
+- MySQL 8 is the target database.
+- Prisma migrations are the source of truth for schema changes.
+- Availability times and overrides are handled in a timezone-aware flow.
+- Only authenticated owner can manage dashboard resources.
+- Seed script is intended for development/demo data and is idempotent enough for local resets.
+- Public booking page is accessible without login.
+
+## Deployment Notes
+
+### Database
+Use a MySQL connection string in production `DATABASE_URL`, then apply:
 
 ```bash
 npx prisma generate
@@ -87,16 +157,14 @@ npx prisma migrate deploy
 npx prisma db seed
 ```
 
-### 2. Frontend (Vercel)
-- Connect your repository to Vercel.
-- Configure all environment variables from your `.env` file.
-- Vercel will automatically detect the Next.js project and deploy.
+### Vercel
+- Connect repository
+- Set environment variables from `.env`
+- Deploy with standard Next.js settings
 
-## Assumptions
+## Submission Checklist
+- Build passes (`npm run build`)
+- Lint passes without errors (`npm run lint`)
+- Database migrations applied
+- Public booking flow tested end-to-end
 
-- Database engine is MySQL 8.
-- Production schema changes are applied through Prisma migrations, not `db push`.
-- Seed data is safe to run repeatedly for demo/testing purposes.
-
-## 📄 License
-This project is licensed under the MIT License.
