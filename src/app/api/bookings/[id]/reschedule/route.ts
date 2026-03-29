@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import type { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/db'
 import { addMinutes } from 'date-fns'
 import { sendBookingEmail } from '@/lib/email'
@@ -48,7 +49,7 @@ export async function PATCH(
 
     const nextEnd = addMinutes(nextStart, current.eventType.duration)
 
-    const updated = await prisma.$transaction(async (tx) => {
+    const updated = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const activeBookings = await tx.booking.findMany({
         where: {
           userId: current.userId,
@@ -66,7 +67,11 @@ export async function PATCH(
 
       const requestedEndWithBuffer = addMinutes(nextEnd, current.eventType.bufferAfterMinutes)
 
-      const overlaps = activeBookings.some((existing) => {
+      const overlaps = activeBookings.some((existing: {
+        endTime: Date
+        startTime: Date
+        eventType: { bufferAfterMinutes: number }
+      }) => {
         const existingEndWithBuffer = addMinutes(
           existing.endTime,
           existing.eventType.bufferAfterMinutes
