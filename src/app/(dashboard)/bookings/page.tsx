@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Calendar, Clock, Loader2, XCircle, CheckCircle2, ArrowUpDown, Timer, Trash2 } from 'lucide-react'
+import { Calendar, Clock, XCircle, CheckCircle2, ArrowUpDown, Timer, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { 
   Table, 
@@ -12,7 +12,7 @@ import {
   TableRow 
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+
 import {
   Dialog,
   DialogContent,

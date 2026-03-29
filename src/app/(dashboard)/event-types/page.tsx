@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { Plus, ExternalLink, Copy, Edit, Trash, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { 
   Dialog, 
   DialogContent, 
