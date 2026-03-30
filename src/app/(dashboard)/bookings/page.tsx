@@ -345,14 +345,14 @@ export default function BookingsPage() {
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-10"
+      className="space-y-8 sm:space-y-10"
     >
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
         <div>
-          <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">Bookings</h1>
-          <p className="text-slate-500 mt-2 font-medium text-lg italic">Track and manage your scheduled appointments.</p>
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">Bookings</h1>
+          <p className="text-slate-500 mt-2 font-medium text-base sm:text-lg italic">Track and manage your scheduled appointments.</p>
         </div>
-        <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
+        <div className="flex w-full sm:w-auto flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
           <ArrowUpDown size={16} className="text-slate-500" />
           <label htmlFor="booking-sort" className="text-sm font-semibold text-slate-700">Sort by</label>
           <select
@@ -365,7 +365,7 @@ export default function BookingsPage() {
                 setPastSort(e.target.value as PastSortOption)
               }
             }}
-            className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-sm font-medium text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-sm font-medium text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           >
             {activeTab === 'upcoming' ? (
               <>
@@ -386,9 +386,9 @@ export default function BookingsPage() {
 
       <div className="w-full">
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'upcoming' | 'past')} className="w-full">
-          <TabsList className="bg-slate-100/80 p-1.5 mb-10 w-fit rounded-2xl border border-slate-200/50">
-            <TabsTrigger value="upcoming" className="rounded-xl px-8 py-2.5 font-bold data-[state=active]:bg-white data-[state=active]:shadow-md transition-all">Upcoming</TabsTrigger>
-            <TabsTrigger value="past" className="rounded-xl px-8 py-2.5 font-bold data-[state=active]:bg-white data-[state=active]:shadow-md transition-all">Past / Cancelled</TabsTrigger>
+          <TabsList className="bg-slate-100/80 p-1.5 mb-8 sm:mb-10 w-full sm:w-fit rounded-2xl border border-slate-200/50">
+            <TabsTrigger value="upcoming" className="rounded-xl px-3 sm:px-8 py-2.5 text-xs sm:text-sm font-bold data-[state=active]:bg-white data-[state=active]:shadow-md transition-all">Upcoming</TabsTrigger>
+            <TabsTrigger value="past" className="rounded-xl px-3 sm:px-8 py-2.5 text-xs sm:text-sm font-bold data-[state=active]:bg-white data-[state=active]:shadow-md transition-all">Past / Cancelled</TabsTrigger>
           </TabsList>
           
           <TabsContent value="upcoming" className="m-0 space-y-6">
@@ -398,7 +398,7 @@ export default function BookingsPage() {
                   <p className="text-slate-500 font-bold text-lg">No upcoming bookings found.</p>
                </div>
              ) : (
-               <motion.div layout className="grid gap-6">
+               <motion.div layout className="grid gap-4 sm:gap-6">
                  <AnimatePresence mode="popLayout">
                    {sortedUpcoming.map((booking, index) => (
                      <motion.div
@@ -407,7 +407,7 @@ export default function BookingsPage() {
                        initial={{ opacity: 0, x: -20 }}
                        animate={{ opacity: 1, x: 0 }}
                        transition={{ delay: index * 0.05 }}
-                       className="premium-card p-6 sm:p-8 flex flex-col md:flex-row md:items-center gap-6 group"
+                       className="premium-card p-5 sm:p-8 flex flex-col md:flex-row md:items-center gap-5 sm:gap-6 group"
                      >
                        <div className="flex-1 space-y-4">
                           <div className="flex items-start justify-between">
@@ -415,7 +415,7 @@ export default function BookingsPage() {
                                <span className="text-[10px] font-extrabold uppercase tracking-widest text-primary bg-primary/5 px-2 py-1 rounded-lg mb-2 inline-block">
                                  {booking.eventType.title}
                                </span>
-                               <h3 className="text-2xl font-bold text-slate-900">{booking.bookerName}</h3>
+                               <h3 className="text-xl sm:text-2xl font-bold text-slate-900">{booking.bookerName}</h3>
                                <p className="text-sm font-semibold text-slate-400 mt-0.5">{booking.bookerEmail}</p>
                             </div>
                             <div className="flex items-center gap-1.5 text-emerald-600 text-[10px] font-extrabold uppercase tracking-widest bg-emerald-50 px-3 py-1.5 rounded-full shadow-sm shadow-emerald-100">
@@ -483,7 +483,7 @@ export default function BookingsPage() {
                      initial={{ opacity: 0 }}
                      animate={{ opacity: 1 }}
                      transition={{ delay: index * 0.05 }}
-                     className="premium-card p-6 sm:p-8 opacity-70 grayscale-[0.5] hover:grayscale-0 transition-all flex flex-col md:flex-row md:items-center gap-6"
+                     className="premium-card p-5 sm:p-8 opacity-70 grayscale-[0.5] hover:grayscale-0 transition-all flex flex-col md:flex-row md:items-center gap-5 sm:gap-6"
                    >
                      <div className="flex-1 space-y-4">
                         <div className="flex items-start justify-between">

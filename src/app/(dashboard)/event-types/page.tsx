@@ -164,17 +164,17 @@ export default function EventTypesPage() {
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-10"
+      className="space-y-8 sm:space-y-10"
     >
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
         <div>
-          <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">Event Types</h1>
-          <p className="text-slate-500 mt-2 font-medium text-lg italic">Create and manage your scheduling links.</p>
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">Event Types</h1>
+          <p className="text-slate-500 mt-2 font-medium text-base sm:text-lg italic">Create and manage your scheduling links.</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger render={
-            <Button className="h-14 px-8 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold shadow-xl shadow-primary/20 transition-all active:scale-95 gap-3 text-lg">
-              <Plus size={24} />
+            <Button className="h-11 sm:h-14 px-5 sm:px-8 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold shadow-xl shadow-primary/20 transition-all active:scale-95 gap-2.5 sm:gap-3 text-base sm:text-lg">
+              <Plus size={20} />
               New Event Type
             </Button>
           } />
@@ -210,7 +210,7 @@ export default function EventTypesPage() {
                     />
                   </div>
                 </div>
-                <div className="outline-box p-5 grid grid-cols-2 gap-4 bg-slate-50/30">
+                <div className="outline-box p-5 grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50/30">
                   <div className="space-y-2">
                     <Label htmlFor="duration" className="font-bold text-slate-700">Duration (min)</Label>
                     <Input 
@@ -285,7 +285,7 @@ export default function EventTypesPage() {
                     />
                   </div>
                 </div>
-                <div className="outline-box p-5 grid grid-cols-2 gap-4 bg-slate-50/30">
+                <div className="outline-box p-5 grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50/30">
                   <div className="space-y-2">
                     <Label htmlFor="edit-duration" className="font-bold text-slate-700">Duration (min)</Label>
                     <Input
@@ -330,7 +330,7 @@ export default function EventTypesPage() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
           {[1, 2, 3].map((i) => (
             <div key={i} className="h-56 rounded-[32px] bg-slate-200/50 animate-pulse border border-slate-100" />
           ))}
@@ -338,7 +338,7 @@ export default function EventTypesPage() {
       ) : (
         <motion.div 
           layout
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8"
         >
           <AnimatePresence mode="popLayout">
             {eventTypes.map((et, index) => (
@@ -349,7 +349,7 @@ export default function EventTypesPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
-                className="premium-card group relative p-8 flex flex-col h-full bg-white shadow-sm"
+                className="premium-card group relative p-5 sm:p-8 flex flex-col h-full bg-white shadow-sm"
               >
                 <div className="flex items-center justify-between mb-6">
                   <div className="h-4 w-4 rounded-full bg-emerald-500 shadow-lg shadow-emerald-200/50" />

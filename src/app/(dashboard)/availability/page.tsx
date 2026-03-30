@@ -220,26 +220,26 @@ export default function AvailabilityPage() {
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-10"
+      className="space-y-8 sm:space-y-10"
     >
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
         <div>
-          <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">Availability</h1>
-          <p className="text-slate-500 mt-2 font-medium text-lg italic">Configure your default working hours and schedule.</p>
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">Availability</h1>
+          <p className="text-slate-500 mt-2 font-medium text-base sm:text-lg italic">Configure your default working hours and schedule.</p>
         </div>
         <Button 
           onClick={saveAvailability} 
           disabled={saving} 
-          className="h-12 px-6 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold shadow-lg shadow-primary/20 transition-all active:scale-95 gap-2"
+          className="h-11 sm:h-12 w-full sm:w-auto px-5 sm:px-6 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold shadow-lg shadow-primary/20 transition-all active:scale-95 gap-2"
         >
           {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
           Save Changes
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 sm:gap-10">
         <div className="xl:col-span-2 space-y-8">
-          <div className="premium-card p-8">
+          <div className="premium-card p-5 sm:p-8">
             <div className="mb-8">
                <h2 className="text-2xl font-bold text-slate-900">Weekly Hours</h2>
                <p className="text-slate-500 font-medium mt-1">Select the days and times you are available for bookings.</p>
@@ -251,22 +251,22 @@ export default function AvailabilityPage() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
                   key={day.dayOfWeek} 
-                  className="flex flex-col sm:flex-row sm:items-center justify-between py-6 first:pt-0 last:pb-0 gap-6"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between py-6 first:pt-0 last:pb-0 gap-4 sm:gap-6"
                 >
-                  <div className="flex items-center gap-6 min-w-max">
+                  <div className="flex items-center gap-4 sm:gap-6">
                     <Switch 
                       checked={day.isAvailable}
                       onCheckedChange={(val) => handleUpdate(day.dayOfWeek, { isAvailable: val })}
                       className="data-[state=checked]:bg-primary"
                     />
-                    <span className="font-bold text-slate-900 w-24 text-lg">{dayNames[day.dayOfWeek]}</span>
+                    <span className="font-bold text-slate-900 min-w-0 text-base sm:text-lg">{dayNames[day.dayOfWeek]}</span>
                   </div>
 
                   {day.isAvailable ? (
                     <motion.div 
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="flex items-center gap-3 w-full sm:w-auto p-1 bg-slate-50 rounded-2xl border border-slate-100 shadow-inner"
+                      className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto p-2 sm:p-1 bg-slate-50 rounded-2xl border border-slate-100 shadow-inner"
                     >
                       <Input 
                         type="time" 
@@ -274,7 +274,7 @@ export default function AvailabilityPage() {
                         value={day.startTime}
                         onChange={(e) => handleUpdate(day.dayOfWeek, { startTime: e.target.value })}
                       />
-                      <span className="text-slate-400 font-bold px-1">–</span>
+                      <span className="text-slate-400 font-bold px-1 self-center">–</span>
                       <Input 
                         type="time" 
                         className="w-full sm:w-32 bg-transparent border-none font-bold text-slate-700 shadow-none focus-visible:ring-0" 
@@ -292,7 +292,7 @@ export default function AvailabilityPage() {
         </div>
 
         <div className="space-y-8">
-          <div className="premium-card p-8 group">
+          <div className="premium-card p-5 sm:p-8 group">
              <div className="mb-6">
                 <h2 className="text-2xl font-bold text-slate-900">Timezone</h2>
                 <p className="text-slate-500 font-medium mt-1">Ensure your availability matches your local time.</p>
@@ -317,7 +317,7 @@ export default function AvailabilityPage() {
              </div>
           </div>
 
-          <div className="premium-card p-8">
+          <div className="premium-card p-5 sm:p-8">
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-slate-900">Overrides</h2>
               <p className="text-slate-500 font-medium mt-1">Block specific dates or custom hours.</p>
@@ -348,7 +348,7 @@ export default function AvailabilityPage() {
                   <motion.div 
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="grid grid-cols-2 gap-3"
+                    className="grid grid-cols-1 sm:grid-cols-2 gap-3"
                   >
                     <Input
                       type="time"

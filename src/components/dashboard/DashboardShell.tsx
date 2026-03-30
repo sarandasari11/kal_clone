@@ -6,12 +6,20 @@ import {
   Clock, 
   Layers, 
   LogOut,
+  Menu,
   User,
   ExternalLink
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Toaster } from '@/components/ui/sonner'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { signOut } from 'next-auth/react'
 import { motion } from 'framer-motion'
 import React from 'react'
@@ -31,11 +39,12 @@ export function DashboardShell({
   session: Session | null
 }) {
   const pathname = usePathname()
+  const mobileNavItems = [...navItems, { name: 'Developer', href: '/developer', icon: Code2 }]
 
   return (
     <div className="flex min-h-screen bg-[#f8fafc]">
       {/* Sidebar - Floating style */}
-      <aside className="fixed left-4 top-4 bottom-4 hidden w-64 lg:block z-40">
+      <aside className="fixed left-3 top-3 bottom-3 hidden w-56 md:block lg:left-4 lg:top-4 lg:bottom-4 lg:w-64 z-40">
         <div className="flex h-full flex-col bg-white border border-slate-200/60 rounded-3xl soft-shadow overflow-hidden">
           {/* Logo */}
           <div className="flex h-20 items-center px-8">
@@ -127,8 +136,82 @@ export function DashboardShell({
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 lg:pl-72">
-        <div className="mx-auto w-full max-w-6xl p-6 sm:p-8 lg:p-12">
+      <main className="flex-1 md:pl-64 lg:pl-72">
+        <div className="sticky top-0 z-30 border-b border-slate-200/70 bg-[#f8fafc]/95 px-4 py-3 backdrop-blur md:hidden">
+          <div className="flex items-center justify-between gap-3">
+            <Link href="/event-types" className="flex items-center gap-2 font-semibold text-slate-900">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/20">
+                <Calendar size={18} />
+              </span>
+              <span className="text-base font-bold tracking-tight">KalClone</span>
+            </Link>
+
+            <Dialog>
+              <DialogTrigger render={
+                <button
+                  type="button"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700"
+                  aria-label="Open menu"
+                >
+                  <Menu size={18} />
+                </button>
+              } />
+              <DialogContent className="max-w-[calc(100%-1.25rem)] rounded-3xl p-5">
+                <DialogHeader>
+                  <DialogTitle className="text-lg font-bold">Menu</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-2 pt-2">
+                  {mobileNavItems.map((item) => {
+                    const isActive = pathname === item.href
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
+                          isActive
+                            ? 'bg-primary/5 text-primary border border-primary/15'
+                            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                        }`}
+                      >
+                        <item.icon size={16} />
+                        <span>{item.name}</span>
+                      </Link>
+                    )
+                  })}
+                </div>
+                <button
+                  onClick={() => signOut({ callbackUrl: '/login' })}
+                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-red-50 px-3 py-2.5 text-sm font-bold text-red-500"
+                >
+                  <LogOut size={14} />
+                  Log out
+                </button>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+            {mobileNavItems.map((item) => {
+              const isActive = pathname === item.href
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold whitespace-nowrap ${
+                    isActive
+                      ? 'border-primary/20 bg-primary/5 text-primary'
+                      : 'border-slate-200 bg-white text-slate-600'
+                  }`}
+                >
+                  <item.icon size={14} />
+                  <span>{item.name}</span>
+                </Link>
+              )
+            })}
+          </div>
+        </div>
+
+        <div className="mx-auto w-full max-w-6xl p-4 sm:p-6 md:p-8 lg:p-12">
           {children}
         </div>
       </main>
